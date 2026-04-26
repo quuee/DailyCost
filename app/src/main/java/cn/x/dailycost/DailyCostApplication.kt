@@ -1,0 +1,26 @@
+package cn.x.dailycost
+
+import android.app.Application
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
+
+class DailyCostApplication : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+
+        // 初始化 Koin DI
+        startKoin {
+            androidLogger(Level.DEBUG)
+            androidContext(this@DailyCostApplication)
+            modules(
+//                networkModule,      // Retrofit 配置
+//                databaseModule,     // Room 配置
+//                repositoryModule,   // 仓库层
+//                viewModelModule     // ViewModel 工厂
+            )
+        }
+    }
+}
