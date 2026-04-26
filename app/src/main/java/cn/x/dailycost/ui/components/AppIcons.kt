@@ -12,7 +12,9 @@ import cn.x.dailycost.R
 object AppIcons {
 
     // ==========数码类==========
-
+    // 手机
+    val shouji: Painter
+        @Composable get() = painterResource(R.drawable.ic_shouji)
 
     // ==========美妆类==========
 
@@ -53,6 +55,7 @@ object AppIcons {
     // 3. 创建一个列表，把所有需要遍历的图标加进来
     val allIcons: List<IconItem>
         @Composable get() = listOf(
+            IconItem("手机", shouji),
             IconItem("半裙", banqun),
             IconItem("板鞋", banxie),
             IconItem("包包", baobao)

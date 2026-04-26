@@ -25,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,19 +45,12 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import cn.x.dailycost.route.Routes
 import cn.x.dailycost.ui.screen.hold.HoldScreen
 import cn.x.dailycost.ui.screen.my.MyScreen
 
 
-sealed class BottomNavItem(
-    val route: String,
-    val label: String
-) {
-    object Hold : BottomNavItem("Hold", "持有")
-    object Add : BottomNavItem("Add", "Add")
-    object My : BottomNavItem("My", "我的")
-}
 
 @Composable
 fun MainScreen(
@@ -138,9 +130,9 @@ private fun BottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(bottomBarHeight)
+                .height(bottomBarHeight),
                 // 给左右留出内边距，避免按钮被挤到边缘，同时给中央留出空白区域
-                .padding(horizontal = 16.dp),
+//                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -337,5 +329,6 @@ private fun BottomNavButton(icon: ImageVector, isSelected: Boolean, onClick: () 
 @Preview
 @Composable
 fun MPPP() {
-//    MainScreen()
+
+    MainScreen(rememberNavController())
 }
