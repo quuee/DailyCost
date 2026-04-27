@@ -48,6 +48,10 @@ object AppIcons {
 
     // ==========其他 统称==========
 
+    // ====系统图标====
+    val renminbi: Painter
+        @Composable get() = painterResource(R.drawable.ic_renminbi)
+
 
     // 2. 定义一个数据类来封装“名字”和“图标”
     data class IconItem(val name: String, val painter: Painter)

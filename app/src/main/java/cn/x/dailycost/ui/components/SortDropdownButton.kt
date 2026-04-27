@@ -24,7 +24,7 @@ import androidx.compose.ui.window.PopupProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnimatedDropdownButton(
+fun SortDropdownButton(
     selectedOption: String,
     options: List<String>,
     onOptionSelected: (String) -> Unit = {}
@@ -51,8 +51,8 @@ fun AnimatedDropdownButton(
             Text(
                 text = selectedOption,
                 color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
 
