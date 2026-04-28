@@ -17,6 +17,9 @@ object AppIcons {
         @Composable get() = painterResource(R.drawable.ic_shouji)
 
     // ==========美妆类==========
+    // 彩妆粉
+    val caizhuangfen: Painter
+        @Composable get() = painterResource(R.drawable.ic_caizhuangfen)
 
     // ==========服装类==========
     // 半裙
@@ -26,6 +29,7 @@ object AppIcons {
     // 板鞋
     val banxie: Painter
         @Composable get() = painterResource(R.drawable.ic_banxie)
+
     // 包包
     val baobao: Painter
         @Composable get() = painterResource(R.drawable.ic_baobao)
@@ -34,6 +38,8 @@ object AppIcons {
     // 贝斯
     val beisi: Painter
         @Composable get() = painterResource(R.drawable.ic_beisi)
+    val changdi: Painter
+        @Composable get() = painterResource(R.drawable.ic_changdi)
 
     // ==========家用电器类==========
     // 冰箱
@@ -41,6 +47,9 @@ object AppIcons {
         @Composable get() = painterResource(R.drawable.ic_bingxiang)
 
     // ==========家具类==========
+    // 餐具
+    val canju: Painter
+        @Composable get() = painterResource(R.drawable.ic_canju)
 
     // ==========运动类==========
 
@@ -54,14 +63,16 @@ object AppIcons {
 
 
     // 2. 定义一个数据类来封装“名字”和“图标”
-    data class IconItem(val name: String, val painter: Painter)
+    data class IconItem(val name: String, val resInt: Int)
 
     // 3. 创建一个列表，把所有需要遍历的图标加进来
-    val allIcons: List<IconItem>
-        @Composable get() = listOf(
-            IconItem("手机", shouji),
-            IconItem("半裙", banqun),
-            IconItem("板鞋", banxie),
-            IconItem("包包", baobao)
-        )
+    val allIcons: List<IconItem> = listOf(
+        IconItem("手机", R.drawable.ic_shouji),
+        IconItem("彩妆粉", R.drawable.ic_caizhuangfen),
+        IconItem("半裙", R.drawable.ic_banqun),
+        IconItem("板鞋", R.drawable.ic_banxie),
+        IconItem("包包", R.drawable.ic_baobao),
+        IconItem("餐具", R.drawable.ic_canju),
+        IconItem("长笛", R.drawable.ic_changdi),
+    )
 }

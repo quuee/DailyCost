@@ -33,13 +33,14 @@ fun SortDropdownButton(
     var buttonHeightPx by remember { mutableStateOf(0) }
     var buttonWidthPx by remember { mutableStateOf(0) }
 
-    Box() {
+    Box(
+    ) {
         // 按钮
         TextButton(
             onClick = { expanded = !expanded },
             modifier = Modifier
                 .onGloballyPositioned { coordinates ->
-                    buttonWidthPx = (coordinates.size.width * 1.6f).toInt()
+                    buttonWidthPx = (coordinates.size.width * 1.65f).toInt()
                     buttonHeightPx = coordinates.size.height
                 },
             shape = RoundedCornerShape(16.dp),
