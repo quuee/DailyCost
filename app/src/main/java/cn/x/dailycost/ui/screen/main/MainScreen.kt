@@ -79,7 +79,7 @@ fun MainScreen(
             ) {
             when (selectedItem) {
                 0 -> HoldScreen()
-                1 -> MyScreen()
+                1 -> MyScreen(navController)
             }
         }
     }

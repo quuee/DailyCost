@@ -7,6 +7,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import cn.x.dailycost.ui.screen.add.AddScreen
 import cn.x.dailycost.ui.screen.main.MainScreen
+import cn.x.dailycost.ui.screen.my.CategoryManagerScreen
+import cn.x.dailycost.ui.screen.my.DataSyncScreen
 
 
 @Composable
@@ -21,7 +23,13 @@ fun AppNavHost() {
                 MainScreen(navController)
             }
             composable<Routes.Add> {
-                AddScreen(navController)
+                AddScreen()
+            }
+            composable<Routes.CategoryManager> {
+                CategoryManagerScreen()
+            }
+            composable<Routes.DataSync> {
+                DataSyncScreen()
             }
         }
     )

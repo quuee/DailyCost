@@ -161,11 +161,17 @@ private fun GoodsItem() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column() {
-                Text("真我gt8", style = MaterialTheme.typography.bodyLarge)
+                Text("真我gt8", style = MaterialTheme.typography.titleMedium)
                 Text("¥ 2717  日均：20/天", style = MaterialTheme.typography.bodySmall)
             }
             Spacer(modifier = Modifier.weight(1f))
-            Text("137 天", style = MaterialTheme.typography.bodyLarge)
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text("137 天", style = MaterialTheme.typography.titleLarge)
+                Text("667天后退役",style = MaterialTheme.typography.bodySmall)
+            }
+
         }
     }
 
@@ -174,7 +180,9 @@ private fun GoodsItem() {
 @Preview
 @Composable
 fun HPPP() {
-    var selected by remember { mutableStateOf("创建时间") }
-    val optionsList = listOf("创建时间", "过期时间", "预计退役时间", "库存")
-    AssetCard(selected, optionsList, onOptionSelected = {})
+//    var selected by remember { mutableStateOf("创建时间") }
+//    val optionsList = listOf("创建时间", "过期时间", "预计退役时间", "库存")
+//    AssetCard(selected, optionsList, onOptionSelected = {})
+
+    GoodsItem()
 }

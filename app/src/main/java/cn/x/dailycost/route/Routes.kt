@@ -23,4 +23,10 @@ sealed class Routes : Parcelable {
     @Serializable
     @Parcelize
     data object Add : Routes()
+    @Serializable
+    @Parcelize
+    data object DataSync : Routes()
+    @Serializable
+    @Parcelize
+    data object CategoryManager : Routes()
 }

@@ -1,5 +1,6 @@
 package cn.x.dailycost.ui.screen.my
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,14 +25,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import cn.x.dailycost.route.Routes
 import cn.x.dailycost.ui.components.DatePickerBottomSheet
 import java.time.LocalDate
 
 
 @Composable
-fun MyScreen(){
+fun MyScreen(
+    navController: NavController
+) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -49,7 +57,7 @@ fun MyScreen(){
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .clickable {  },
+                        .clickable {  navController.navigate(Routes.DataSync) },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("数据同步")
@@ -62,7 +70,7 @@ fun MyScreen(){
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .clickable {  },
+                        .clickable {  navController.navigate(Routes.CategoryManager) },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("分类管理")
@@ -75,7 +83,7 @@ fun MyScreen(){
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .clickable {  },
+                        .clickable { },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("通用设置")
@@ -167,6 +175,6 @@ fun MyScreen(){
 
 @Preview
 @Composable
-fun MPPP(){
-    MyScreen()
+fun MPPP() {
+    MyScreen(navController = rememberNavController())
 }
