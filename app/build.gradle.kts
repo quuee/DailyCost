@@ -57,6 +57,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.activity.compose)
 
+//    implementation("androidx.camera:camera-camera2:1.6.0")
+
     // Compose BOM 管理版本
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)

@@ -1,5 +1,16 @@
 package cn.x.dailycost.ui.screen.add
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +20,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,20 +33,31 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,6 +68,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -53,11 +79,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cn.x.dailycost.ui.components.AppIcons
+import cn.x.dailycost.ui.components.CameraCaptureComponent
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
+import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddScreen(
     navController: NavController
@@ -88,10 +124,27 @@ fun AddScreen(
         initialDisplayMode = DisplayMode.Picker
     )
 
+    // 相机card是否展开
+    var cameraExpanded by remember { mutableStateOf(true) }
+
+
+
     // 换scaffold ？
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("添加物品") },
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null
+                    )
+                },
+                actions = {}
+            )
+        },
         bottomBar = {
             // 底部固定按钮
             Row(
@@ -115,20 +168,31 @@ fun AddScreen(
         ) {
             // 输入名称
             item {
-                TextField(
+                OutlinedTextField(
                     value = goodsName,
                     onValueChange = { newText ->
                         goodsName = newText
                     },
-                    label = { Text("物品名称") },
-                    placeholder = { Text("物品名称") },
+                    placeholder = { Text("输入物品名称") },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Done
                     ),
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,   // 聚焦时边框透明（去掉边框/下划线）
+                        unfocusedBorderColor = Color.Transparent, // 未聚焦时边框透明（去掉边框/下划线）
+                        disabledBorderColor = Color.Transparent   // 禁用状态边框透明
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(8.dp),
+                        ),
+
+                    )
             }
 
             // 选择分类 图标 拍照 购入价格 购入日期 退役日期  过保日期
@@ -156,6 +220,7 @@ fun AddScreen(
                                 text = "选择分类",
                                 modifier = Modifier.padding(8.dp)
                             )
+                            HorizontalDivider()
                         }
                     }
                     item {
@@ -172,6 +237,7 @@ fun AddScreen(
                                 text = "选择图标",
                                 modifier = Modifier.padding(8.dp)
                             )
+                            HorizontalDivider()
                         }
                     }
                     item {
@@ -187,10 +253,27 @@ fun AddScreen(
                                 text = "购买价格",
                                 modifier = Modifier.padding(8.dp)
                             )
-                            TextField(
-                                modifier = Modifier.padding(4.dp),
+                            HorizontalDivider()
+                            OutlinedTextField(
                                 value = "",
-                                onValueChange = {}
+                                onValueChange = {},
+                                placeholder = { Text("0.00") },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color.Transparent,   // 聚焦时边框透明（去掉边框/下划线）
+                                    unfocusedBorderColor = Color.Transparent, // 未聚焦时边框透明（去掉边框/下划线）
+                                    disabledBorderColor = Color.Transparent   // 禁用状态边框透明
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+//                                        shape = RoundedCornerShape(8.dp),
+                                    ),
                             )
                         }
                     }
@@ -208,6 +291,7 @@ fun AddScreen(
                                 text = "购买日期",
                                 modifier = Modifier.padding(8.dp)
                             )
+                            HorizontalDivider()
                             Text(
                                 text = "2025-12-2",
                                 modifier = Modifier.padding(8.dp)
@@ -228,6 +312,7 @@ fun AddScreen(
                                 text = "退役日期",
                                 modifier = Modifier.padding(8.dp)
                             )
+                            HorizontalDivider()
                             Text(
                                 text = "2026-12-2",
                                 modifier = Modifier.padding(8.dp)
@@ -242,16 +327,85 @@ fun AddScreen(
                 TextField(
                     value = remark,              // 绑定的文本值
                     onValueChange = { remark = it }, // 更新文本的回调
-                    modifier = Modifier
-                        .fillMaxWidth()             // 撑满宽度
-                        .padding(16.dp),            // 添加一些外边距
                     // 行数限制 - 核心配置
                     minLines = 4,                   // 至少显示4行
-                    maxLines = 6,                   // 最多展开到6行后开始滚动
-                    // 样式定制
-                    label = { Text("详细描述") },    // 输入框标签
+                    maxLines = 8,                   // 最多展开到6行后开始滚动
                     placeholder = { Text("请输入您的详细描述...") }, // 占位符提示
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,   // 聚焦时边框透明（去掉边框/下划线）
+                        unfocusedBorderColor = Color.Transparent, // 未聚焦时边框透明（去掉边框/下划线）
+                        disabledBorderColor = Color.Transparent   // 禁用状态边框透明
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(8.dp),
+                        ),
                 )
+            }
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                        // 3. 核心动画修饰符：当内容尺寸变化时，自动产生平滑的展开/折叠动画
+                        .animateContentSize(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        // 始终显示的标题部分
+                        Row(
+                            modifier = Modifier.clickable { cameraExpanded = !cameraExpanded }
+                        ) {
+                            Text(
+                                text = "添加照片(可选)",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = if (cameraExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = if (cameraExpanded) "折叠" else "展开",
+                            )
+                        }
+                        HorizontalDivider()
+
+                        // 根据 expanded 状态，条件渲染隐藏的内容
+                        if (cameraExpanded) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+
+                                Text(
+                                    text = "选择照片",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                CameraCaptureComponent(
+                                    modifier = Modifier.fillMaxSize(),
+                                    onPhotoCaptured = { uri ->
+                                        // 这里可以拿到拍好的照片 Uri，进行上传服务器等后续业务处理
+                                        Log.d("DEBUG PHOTO", "AddScreen: $uri")
+                                    }
+                                )
+                            }
+
+                        }
+
+                    }
+                }
             }
         }
 

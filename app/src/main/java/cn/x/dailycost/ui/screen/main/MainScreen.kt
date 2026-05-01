@@ -51,7 +51,6 @@ import cn.x.dailycost.ui.screen.hold.HoldScreen
 import cn.x.dailycost.ui.screen.my.MyScreen
 
 
-
 @Composable
 fun MainScreen(
     navController: NavController
@@ -63,16 +62,14 @@ fun MainScreen(
     Scaffold(
         bottomBar = {
             BottomBar(
-                navController=navController,
+                navController = navController,
                 selectedItem = selectedItem,
                 onItemSelected = { newIndex ->
                     selectedItem = newIndex
-                })
-
+                }
+            )
         },
-
         ) { innerPadding ->
-
         // 页面主要内容
         Box(
             modifier = Modifier
@@ -87,7 +84,6 @@ fun MainScreen(
         }
     }
 }
-
 
 
 @Composable
@@ -131,7 +127,7 @@ private fun BottomBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(bottomBarHeight),
-                // 给左右留出内边距，避免按钮被挤到边缘，同时给中央留出空白区域
+            // 给左右留出内边距，避免按钮被挤到边缘，同时给中央留出空白区域
 //                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
@@ -255,58 +251,6 @@ class BottomNavWithCutoutShape(
         return Outline.Generic(path)
     }
 }
-
-// region
-//class BottomNavWithCutoutShape(
-//    private val cutoutRadius: Float,
-//    private val edgeRadius: Float = 8f,
-//) : Shape {
-//    override fun createOutline(
-//        size: Size,
-//        layoutDirection: LayoutDirection,
-//        density: Density
-//    ): Outline {
-//        val path = Path().apply {
-//            // 从左上角开始
-//            moveTo(0f, 0f)
-//
-//            // 计算凹槽的起始和结束位置
-//            val centerX = size.width / 2
-//            val cutoutStartX = centerX - cutoutRadius
-//            val cutoutEndX = centerX + cutoutRadius
-//
-//            // 绘制到凹槽起始点
-//            lineTo(cutoutStartX, 0f)
-//
-//            // 绘制一个向下的标准半圆形凹槽
-//            arcTo(
-//                rect = Rect(
-//                    left = cutoutStartX,
-//                    top = -cutoutRadius,   // 矩形顶部与导航栏顶部对齐
-//                    right = cutoutEndX,
-//                    bottom = cutoutRadius  // 矩形高度为半径的两倍，即直径
-//                ),
-//                startAngleDegrees = 180f,  // 从半圆的左侧（9点钟方向）开始
-//                sweepAngleDegrees = -180f,  // 顺时针扫过180度，到达半圆的右侧（3点钟方向）
-//                forceMoveTo = false
-//            )
-//
-//            // 绘制到右上角
-//            lineTo(size.width, 0f)
-//
-//            // 绘制右侧边
-//            lineTo(size.width, size.height)
-//
-//            // 绘制底部边
-//            lineTo(0f, size.height)
-//
-//            // 闭合路径
-//            close()
-//        }
-//        return Outline.Generic(path)
-//    }
-//}
-// endregion
 
 
 // 底部导航按钮组件

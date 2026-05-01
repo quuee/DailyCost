@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 使用应用的缓存目录，无需额外申请存储权限 -->
+    <cache-path name="camera_cache" path="." />
+</paths>
