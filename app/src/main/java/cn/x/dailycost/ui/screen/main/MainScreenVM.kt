@@ -1,6 +1,7 @@
 package cn.x.dailycost.ui.screen.main
 
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.viewModelScope
@@ -99,6 +100,7 @@ class MainScreenVM(
                     }
                 }
                 .collect { items ->
+                    Log.d("MainScreenVM", "${items.size}: ")
                     // 查询成功，更新 State
                     setState {
                         copy(

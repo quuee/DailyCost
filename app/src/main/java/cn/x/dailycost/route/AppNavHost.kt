@@ -23,7 +23,7 @@ fun AppNavHost() {
                 MainScreen(navController)
             }
             composable<Routes.Goods> {
-                GoodsScreen()
+                GoodsScreen(navController = navController)
             }
             composable<Routes.CategoryManager> {
                 CategoryManagerScreen(navController = navController)

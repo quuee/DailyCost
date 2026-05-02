@@ -53,7 +53,7 @@ fun HoldScreen(
         stickyHeader {
             SearchBar(state.categories, onSearch = { selectedCategory, searchText -> })
         }
-        items(state.goodsItems){goods->
+        items(state.goodsItems) { goods ->
             GoodsItem(goods)
         }
     }

@@ -68,11 +68,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import cn.x.dailycost.R
 import cn.x.dailycost.data.entity.CategoryEntity
+import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.CameraCaptureComponent
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
+import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
+import cn.x.dailycost.util.formatTimestamp
 import org.koin.compose.viewmodel.koinViewModel
 
 
@@ -80,6 +85,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun GoodsScreen(
     mainVM: MainScreenVM = koinViewModel(),
+    navController: NavController
 ) {
 
     val state by mainVM.state.collectAsState()
@@ -87,7 +93,8 @@ fun GoodsScreen(
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
     var showCategoryIconsBottomSheet by remember { mutableStateOf(false) }
 
-    var showDateDialog by remember { mutableStateOf(false) }
+    var showBuyDateDialog by remember { mutableStateOf(false) }
+    var showEndDateDialog by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         yearRange = 1970..2050, // 可设置年份范围
         initialSelectedDateMillis = System.currentTimeMillis(),
@@ -104,6 +111,9 @@ fun GoodsScreen(
     var priceText by remember { mutableStateOf("") }
     var goodsName by remember { mutableStateOf("") }
     var remark by remember { mutableStateOf("") }
+    var photoUri by remember { mutableStateOf("") }
+    var buyDateMillis by remember { mutableStateOf(0L) }
+    var endDateMillis by remember { mutableStateOf(0L) }
 
     Scaffold(
         modifier = Modifier
@@ -128,10 +138,29 @@ fun GoodsScreen(
                     .background(color = MaterialTheme.colorScheme.secondaryContainer),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                TextButton(onClick = {}) {
+                TextButton(onClick = {
+
+                }) {
                     Text("Delete")
                 }
-                TextButton(onClick = {}) {
+                TextButton(onClick = {
+                    mainVM.processIntent(
+                        MainIntent.CreateGoods(
+                            GoodsItemEntity(
+                                gid = 0L,
+                                goodsName = goodsName,
+                                price = price,
+                                cid = selectedCategory?.cid ?: 0L,
+                                iconInt = selectIcon?.resInt ?: R.drawable.ic_package,
+                                buyDate = buyDateMillis,
+                                endDate = endDateMillis,
+                                remark = remark,
+                                realPictureUri = photoUri,
+                            )
+                        )
+                    )
+                    navController.popBackStack()
+                }) {
                     Text("Save")
                 }
             }
@@ -251,7 +280,7 @@ fun GoodsScreen(
                             HorizontalDivider()
                             OutlinedTextField(
                                 value = priceText,
-                                onValueChange = { newText->
+                                onValueChange = { newText ->
                                     // 2. 核心逻辑：使用正则表达式过滤非法输入
                                     // 允许输入数字、小数点，且保证只有一个小数点，小数点后最多保留2位
                                     val regex = Regex("^\\d*\\.?\\d{0,2}$")
@@ -285,7 +314,7 @@ fun GoodsScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(onClick = { showDateDialog = true })
+                                .clickable(onClick = { showBuyDateDialog = true })
                                 .aspectRatio(2f),// 宽高比
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             shape = MaterialTheme.shapes.medium,
@@ -297,7 +326,7 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             Text(
-                                text = "2025-12-2",
+                                text = formatTimestamp(buyDateMillis),
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -306,7 +335,7 @@ fun GoodsScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(onClick = { showDateDialog = true })
+                                .clickable(onClick = { showEndDateDialog = true })
                                 .aspectRatio(2f),// 宽高比
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             shape = MaterialTheme.shapes.medium,
@@ -318,7 +347,7 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             Text(
-                                text = "2026-12-2",
+                                text = formatTimestamp(endDateMillis),
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -403,6 +432,7 @@ fun GoodsScreen(
                                         // 这里可以拿到拍好的照片 Uri，进行上传服务器等后续业务处理
                                         // content://cn.x.dailycost.debug.fileprovider/camera_cache/IMG_20260502_181434.jpg
                                         Log.d("DEBUG PHOTO", "onPhotoCaptured: $uri")
+                                        photoUri = uri.path.toString()
                                     }
                                 )
                             }
@@ -444,19 +474,30 @@ fun GoodsScreen(
         }
 
         // 日期选择
-        if (showDateDialog) {
+        if (showBuyDateDialog || showEndDateDialog) {
             DatePickerDialog(
-                onDismissRequest = { showDateDialog = false },
+                onDismissRequest = { showBuyDateDialog = false },
                 confirmButton = {
                     TextButton(onClick = {
                         // datePickerState.selectedDateMillis 获取选择的时间戳
-                        showDateDialog = false
+                        if (showBuyDateDialog) {
+                            buyDateMillis = datePickerState.selectedDateMillis ?: 0L
+                            showBuyDateDialog = false
+                        }
+                        if (showEndDateDialog) {
+                            endDateMillis = datePickerState.selectedDateMillis ?: 0L
+                            showEndDateDialog = false
+                        }
+
                     }) {
                         Text("确定")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDateDialog = false }) {
+                    TextButton(onClick = {
+                        showBuyDateDialog = false
+                        showEndDateDialog = false
+                    }) {
                         Text("取消")
                     }
                 }
@@ -622,6 +663,6 @@ private fun CategoryIconsSheet(
 @Preview
 @Composable
 fun APPFF() {
-    GoodsScreen()
+//    GoodsScreen()
 //    CategoryIconsSheet(onSelect = {}, onClose = {})
 }
