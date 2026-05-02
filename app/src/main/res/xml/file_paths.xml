@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <!-- 使用应用的缓存目录，无需额外申请存储权限 -->
-    <cache-path name="camera_cache" path="." />
+    <!-- name 属性可以自定义，path 属性对应 getExternalFilesDir(Pictures) 下的相对路径 -->
+    <external-files-path name="daily_cost_private_images" path="Pictures/" />
 </paths>

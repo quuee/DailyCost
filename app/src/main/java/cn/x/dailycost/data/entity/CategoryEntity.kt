@@ -1,0 +1,13 @@
+package cn.x.dailycost.data.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "category")
+data class CategoryEntity(
+    @PrimaryKey(autoGenerate = true)
+    val cid: Long,
+    val name: String,
+    val color: Int,
+    val sort: Int,
+)

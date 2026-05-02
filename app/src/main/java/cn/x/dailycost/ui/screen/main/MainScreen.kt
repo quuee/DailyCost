@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -49,11 +50,12 @@ import androidx.navigation.compose.rememberNavController
 import cn.x.dailycost.route.Routes
 import cn.x.dailycost.ui.screen.hold.HoldScreen
 import cn.x.dailycost.ui.screen.my.MyScreen
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
 fun MainScreen(
-    navController: NavController
+    navController: NavController,
 ) {
 
     // 用于记录选中的底部导航项
@@ -148,7 +150,7 @@ private fun BottomBar(
 
         // 3. 添加突出的悬浮按钮 (叠加在凹槽上方)
         FloatingActionButton(
-            onClick = { navController.navigate(Routes.Add) },
+            onClick = { navController.navigate(Routes.Goods) },
             modifier = Modifier
                 .size(bottomBarHeight)
                 .align(Alignment.BottomCenter) // 居中于父布局底部

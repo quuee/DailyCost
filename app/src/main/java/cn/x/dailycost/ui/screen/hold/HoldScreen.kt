@@ -7,60 +7,61 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.SearchBar
 import cn.x.dailycost.ui.components.SortDropdownButton
+import cn.x.dailycost.ui.screen.main.MainScreenVM
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
-fun HoldScreen() {
-
-    var selected by remember { mutableStateOf("创建时间") }
-    val optionsList = listOf("创建时间", "过期时间", "预计退役时间", "库存")
-    val categories = listOf("全部分类", "电子产品", "服装", "图书", "家居用品", "美妆")
+fun HoldScreen(
+    mainVM: MainScreenVM = koinViewModel(),
+) {
+    val state by mainVM.state.collectAsState()
 
     LazyColumn(
 
     ) {
         item {
-            AssetCard(selected, optionsList, onOptionSelected = { selected = it })
+            AssetCard(
+                selectedField = state.selectSortField,
+                options = state.sortFiledList,
+                onOptionSelected = { state.selectSortField = it })
         }
         stickyHeader {
-            SearchBar(categories, onSearch = { selectedCategory, searchText -> })
+            SearchBar(state.categories, onSearch = { selectedCategory, searchText -> })
         }
-        repeat(20) {
-            item {
-                GoodsItem()
-            }
+        items(state.goodsItems){goods->
+            GoodsItem(goods)
         }
     }
 }
 
 @Composable
 private fun AssetCard(
-    selected: String,
+    selectedField: String,
     options: List<String>,
     onOptionSelected: (String) -> Unit = {}
 ) {
@@ -90,7 +91,7 @@ private fun AssetCard(
                 Spacer(Modifier.weight(1f))
 
                 SortDropdownButton(
-                    selectedOption = selected,
+                    selectedOption = selectedField,
                     options = options,
                     onOptionSelected = { onOptionSelected(it) },
                 )
@@ -146,7 +147,7 @@ private fun AssetCard(
 
 
 @Composable
-private fun GoodsItem() {
+private fun GoodsItem(goodsItem: GoodsItemEntity) {
     Card(
         modifier = Modifier.padding(4.dp)
     ) {
@@ -155,21 +156,21 @@ private fun GoodsItem() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = AppIcons.shouji,
+                painter = painterResource(goodsItem.iconInt),
                 modifier = Modifier.size(36.dp),
                 contentDescription = null
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column() {
-                Text("真我gt8", style = MaterialTheme.typography.titleMedium)
-                Text("¥ 2717  日均：20/天", style = MaterialTheme.typography.bodySmall)
+                Text(goodsItem.goodsName, style = MaterialTheme.typography.titleMedium)
+                Text("¥ ${goodsItem.price}  日均：20/天", style = MaterialTheme.typography.bodySmall)
             }
             Spacer(modifier = Modifier.weight(1f))
             Column(
                 horizontalAlignment = Alignment.End
             ) {
                 Text("137 天", style = MaterialTheme.typography.titleLarge)
-                Text("667天后退役",style = MaterialTheme.typography.bodySmall)
+                Text("667天后退役", style = MaterialTheme.typography.bodySmall)
             }
 
         }
@@ -184,5 +185,5 @@ fun HPPP() {
 //    val optionsList = listOf("创建时间", "过期时间", "预计退役时间", "库存")
 //    AssetCard(selected, optionsList, onOptionSelected = {})
 
-    GoodsItem()
+//    GoodsItem()
 }

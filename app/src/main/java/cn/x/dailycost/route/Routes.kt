@@ -22,7 +22,7 @@ sealed class Routes : Parcelable {
 
     @Serializable
     @Parcelize
-    data object Add : Routes()
+    data object Goods : Routes()
     @Serializable
     @Parcelize
     data object DataSync : Routes()

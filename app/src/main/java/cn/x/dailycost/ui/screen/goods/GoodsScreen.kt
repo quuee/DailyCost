@@ -1,4 +1,4 @@
-package cn.x.dailycost.ui.screen.add
+package cn.x.dailycost.ui.screen.goods
 
 
 import android.util.Log
@@ -48,7 +48,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -64,34 +68,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.CameraCaptureComponent
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
+import cn.x.dailycost.ui.screen.main.MainScreenVM
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(
+fun GoodsScreen(
+    mainVM: MainScreenVM = koinViewModel(),
 ) {
-    var goodsName by remember { mutableStateOf("") }
-    var remark by remember { mutableStateOf("") }
+
+    val state by mainVM.state.collectAsState()
 
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
-    val categories = listOf(
-        "全部分类",
-        "电子产品",
-        "服装",
-        "图书",
-        "家居用品",
-        "美妆",
-        "虚拟物品",
-        "运动户外",
-        "药品保健",
-        "零食饮料"
-    )
-
     var showCategoryIconsBottomSheet by remember { mutableStateOf(false) }
 
     var showDateDialog by remember { mutableStateOf(false) }
@@ -104,8 +97,14 @@ fun AddScreen(
     // 相机card是否展开
     var cameraExpanded by remember { mutableStateOf(true) }
 
+    var selectedCategory: CategoryEntity? by remember { mutableStateOf(null) }
+    var selectIcon: AppIcons.IconItem? by remember { mutableStateOf(null) }
+    var price: Float by remember { mutableStateOf(0F) }
+    // priceText 文本中间值
+    var priceText by remember { mutableStateOf("") }
+    var goodsName by remember { mutableStateOf("") }
+    var remark by remember { mutableStateOf("") }
 
-    // 换scaffold ？
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -124,7 +123,9 @@ fun AddScreen(
         bottomBar = {
             // 底部固定按钮
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = MaterialTheme.colorScheme.secondaryContainer),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 TextButton(onClick = {}) {
@@ -197,6 +198,9 @@ fun AddScreen(
                                 modifier = Modifier.padding(8.dp)
                             )
                             HorizontalDivider()
+                            selectedCategory?.let {
+                                Text(it.name)
+                            }
                         }
                     }
                     item {
@@ -214,6 +218,21 @@ fun AddScreen(
                                 modifier = Modifier.padding(8.dp)
                             )
                             HorizontalDivider()
+                            selectIcon?.let {
+                                Row() {
+                                    // 使用 key 包裹 Icon，当 resInt 变化时强制重新创建 Icon 组件
+                                    key(it.resInt) {
+                                        Icon(
+                                            painter = painterResource(it.resInt),
+                                            modifier = Modifier
+                                                .size(36.dp),
+                                            contentDescription = null,
+                                            tint = null, // 影响默认颜色
+                                        )
+                                    }
+                                    Text(it.name)
+                                }
+                            }
                         }
                     }
                     item {
@@ -231,9 +250,18 @@ fun AddScreen(
                             )
                             HorizontalDivider()
                             OutlinedTextField(
-                                value = "",
-                                onValueChange = {},
-                                placeholder = { Text("0.00") },
+                                value = priceText,
+                                onValueChange = { newText->
+                                    // 2. 核心逻辑：使用正则表达式过滤非法输入
+                                    // 允许输入数字、小数点，且保证只有一个小数点，小数点后最多保留2位
+                                    val regex = Regex("^\\d*\\.?\\d{0,2}$")
+                                    if (newText.isEmpty() || newText.matches(regex)) {
+                                        priceText = newText
+                                        // 3. 安全地更新你的 price 变量（处理空字符串的情况）
+                                        price = newText.toFloatOrNull() ?: 0.00f
+                                    }
+                                },
+//                                placeholder = { Text(price.toString()) },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Number,
                                     imeAction = ImeAction.Done
@@ -373,7 +401,8 @@ fun AddScreen(
                                     modifier = Modifier.fillMaxSize(),
                                     onPhotoCaptured = { uri ->
                                         // 这里可以拿到拍好的照片 Uri，进行上传服务器等后续业务处理
-                                        Log.d("DEBUG PHOTO", "AddScreen: $uri")
+                                        // content://cn.x.dailycost.debug.fileprovider/camera_cache/IMG_20260502_181434.jpg
+                                        Log.d("DEBUG PHOTO", "onPhotoCaptured: $uri")
                                     }
                                 )
                             }
@@ -391,8 +420,10 @@ fun AddScreen(
             onDismissRequest = { showCategoryBottomSheet = false } // 关闭弹窗
         ) {
             CategorySheet(
-                categories = categories,
-                onSelect = {},
+                categories = state.categories,
+                onSelect = {
+                    selectedCategory = it
+                },
                 onClose = {
                     showCategoryBottomSheet = false
                 }
@@ -404,7 +435,8 @@ fun AddScreen(
             onDismissRequest = { showCategoryIconsBottomSheet = false } // 关闭弹窗
         ) {
             CategoryIconsSheet(
-                onSelect = {},
+                selectedIcon = selectIcon,
+                onSelectIcon = { selectIcon = it },
                 onClose = {
                     showCategoryIconsBottomSheet = false
                 }
@@ -437,11 +469,20 @@ fun AddScreen(
 
 @Composable
 private fun CategorySheet(
-    categories: List<String>,
-    onSelect: (String) -> Unit,
+    categories: List<CategoryEntity>,
+    onSelect: (CategoryEntity) -> Unit,
     onClose: () -> Unit,
 ) {
-    var selectedCategory by remember { mutableStateOf("全部分类") }
+    var selectedCategory: CategoryEntity by remember {
+        mutableStateOf(
+            CategoryEntity(
+                cid = 0L,
+                name = "全部分类",
+                color = Color.Transparent.toArgb(),
+                sort = 1
+            )
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -471,14 +512,14 @@ private fun CategorySheet(
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {
                             selectedCategory = category
-
+                            onSelect(selectedCategory)
                         },
                     color = if (category == selectedCategory)
                         MaterialTheme.colorScheme.primaryContainer
                     else MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
-                        text = category,
+                        text = category.name,
                         fontSize = 14.sp,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -503,17 +544,18 @@ private fun CategorySheet(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("确认操作")
+            Text("确认")
         }
     }
 }
 
 @Composable
 private fun CategoryIconsSheet(
-    onSelect: (String) -> Unit,
+    selectedIcon: AppIcons.IconItem?,
+    onSelectIcon: (AppIcons.IconItem) -> Unit,
     onClose: () -> Unit,
 ) {
-    var isSelected by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -543,12 +585,14 @@ private fun CategoryIconsSheet(
                         .padding(4.dp)
                         // 根据 isSelected 状态动态设置边框
                         .border(
-                            width = if (isSelected) 1.dp else 0.dp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            width = if (selectedIcon == iconItem) 1.dp else 0.dp,
+                            color = if (selectedIcon == iconItem) MaterialTheme.colorScheme.primary else Color.Transparent,
                             shape = RoundedCornerShape(8.dp) // 可选：添加圆角
                         )
                         // 添加点击事件
-                        .clickable { isSelected = !isSelected },
+                        .clickable {
+                            onSelectIcon(iconItem)
+                        },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
@@ -562,12 +606,22 @@ private fun CategoryIconsSheet(
                 }
             }
         }
+        Button(
+            onClick = {
+                // 执行某些操作...
+                // 然后关闭弹窗
+                onClose()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("确认")
+        }
     }
 }
 
 @Preview
 @Composable
 fun APPFF() {
-    AddScreen()
+    GoodsScreen()
 //    CategoryIconsSheet(onSelect = {}, onClose = {})
 }

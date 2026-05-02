@@ -1,0 +1,236 @@
+package cn.x.dailycost.ui.screen.main
+
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.viewModelScope
+import androidx.sqlite.db.SimpleSQLiteQuery
+import cn.q.ui.base.MviEffect
+import cn.q.ui.base.MviIntent
+import cn.q.ui.base.MviState
+import cn.q.ui.base.MviViewModel
+import cn.x.dailycost.data.dao.CategoryDao
+import cn.x.dailycost.data.dao.GoodsItemDao
+import cn.x.dailycost.data.entity.CategoryEntity
+import cn.x.dailycost.data.entity.GoodsItemEntity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.launch
+
+// State - UI 状态
+data class MainState(
+    override val isLoading: Boolean = false,
+    override val error: String? = null,
+
+    val goodsItems: List<GoodsItemEntity> = emptyList(),
+    val addGoodsItem: GoodsItemEntity? = null,
+
+    val categories: List<CategoryEntity> = emptyList(),
+    val categoryId: Long? = null,
+
+    // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
+    val sortFiledList: List<String> = listOf("创建时间", "过期时间", "预计退役时间", "库存"),
+    var selectSortField: String = "创建时间",
+
+    // 0 升序; 1 降序
+    val sortOrderList: List<Int> = listOf(0, 1),
+    var selectSortOrder: Int = 1
+
+) : MviState
+
+// Intent - 用户操作
+sealed class MainIntent : MviIntent {
+    data object SyncRemote : MainIntent()
+    data class ToggleGoods(val gid: Long) : MainIntent()
+    data class CreateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
+    data class DeleteGoods(val goodsItem: GoodsItemEntity) : MainIntent()
+    data class UpdateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
+
+    data class SearchGoods(
+        val name: String?,
+        val cid: Long?,
+        val sortField: String?,
+        val sortOrder: Int? // 传入 "ASC" 或 "DESC"
+    ) : MainIntent()
+
+    data class CreateCategory(val category: CategoryEntity) : MainIntent()
+    data class DeleteCategory(val category: CategoryEntity) : MainIntent()
+    data class UpdateCategory(val category: CategoryEntity) : MainIntent()
+
+}
+
+// Effect - 副作用
+sealed class MainEffect : MviEffect {
+    data class ShowMessage(val message: String) : MainEffect()
+    data class NavigateToDetail(val gid: Long) : MainEffect()
+}
+
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+class MainScreenVM(
+    private val goodsItemDao: GoodsItemDao,
+    private val categoryDao: CategoryDao,
+) : MviViewModel<MainState, MainIntent, MainEffect>(MainState()) {
+
+    // 用于触发搜索的内部 Flow（支持防抖）
+    private val searchGoodsTriggerFlow =
+        MutableSharedFlow<SearchGoodsParams>(extraBufferCapacity = 1)
+
+    init {
+        // 监听搜索触发，并自动收集最新的查询结果
+        viewModelScope.launch {
+            searchGoodsTriggerFlow
+                .debounce(300) // 300毫秒防抖，避免频繁查询
+                .distinctUntilChanged() // 如果搜索条件没变，不重复查询
+                .flatMapLatest { params ->
+                    queryGoods(
+                        params.name,
+                        params.cid,
+                        params.sortField,
+                        params.sortOrder
+                    ).catch { e ->
+                        // 捕获数据库查询异常
+                        setState { copy(isLoading = false, error = e.message) }
+                    }
+                }
+                .collect { items ->
+                    // 查询成功，更新 State
+                    setState {
+                        copy(
+                            goodsItems = items,
+                            isLoading = false,
+                            error = null
+                        )
+                    }
+                }
+        }
+
+        viewModelScope.launch {
+            categoryDao.getAllCategories().collect { items ->
+                setState {
+                    copy(
+                        categories = listOf(
+                            CategoryEntity(
+                                cid = 0L,
+                                name = "全部分类",
+                                color = Color.Transparent.toArgb(),
+                                sort = 1
+                            )
+                        ) + items
+                    )
+                }
+            }
+        }
+    }
+
+    override suspend fun handleIntent(intent: MainIntent) {
+        when (intent) {
+            is MainIntent.SyncRemote -> syncRemote()
+            is MainIntent.ToggleGoods -> toggleGoods(intent.gid)
+            is MainIntent.DeleteGoods -> deleteGoods(intent.goodsItem)
+            is MainIntent.CreateGoods -> createGoods(intent.goodsItem)
+            is MainIntent.UpdateGoods -> updateGoods(intent.goodsItem)
+            is MainIntent.SearchGoods -> {
+                // 触发搜索（进入 Flow 管道）
+                setState { copy(isLoading = true) }
+                searchGoodsTriggerFlow.emit(
+                    SearchGoodsParams(intent.name, intent.cid, intent.sortField, intent.sortOrder)
+                )
+            }
+
+            is MainIntent.CreateCategory -> createCategory(intent.category)
+            is MainIntent.DeleteCategory -> deleteCategory(intent.category)
+            is MainIntent.UpdateCategory -> updateCategory(intent.category)
+
+        }
+    }
+
+    // 将 UI 的排序字段映射为数据库实际字段
+    private fun mapSortFieldToDb(uiField: String?): String {
+        return when (uiField) {
+            "创建时间" -> "createDate"
+            "过期时间" -> "buyDate" // 假设你的 buyDate 代表过期/购入时间
+            "预计退役时间" -> "endDate"
+            "库存" -> "price" // 假设你用 price 字段暂代库存，如有真实库存字段请替换
+            "物品名称" -> "goodsName"
+            else -> "createDate" // 默认排序字段
+        }
+    }
+
+    private fun syncRemote() {}
+    private fun toggleGoods(gid: Long) {}
+    private suspend fun deleteGoods(goodsItem: GoodsItemEntity) {
+        goodsItemDao.delete(goodsItem)
+    }
+
+    private suspend fun updateGoods(goodsItem: GoodsItemEntity) {
+        goodsItemDao.update(goodsItem)
+    }
+
+    private suspend fun createGoods(goodsItem: GoodsItemEntity) {
+        goodsItemDao.insert(goodsItem)
+    }
+
+
+    private fun queryGoods(
+        name: String?,
+        cid: Long?,
+        sortField: String?,
+        sortOrder: Int?
+    ): Flow<List<GoodsItemEntity>> {
+        val sqlBuilder = StringBuilder("SELECT * FROM goods_item WHERE 1=1")
+        val args = mutableListOf<Any>()
+
+        // 物品名称模糊查询
+        if (!name.isNullOrBlank()) {
+            sqlBuilder.append(" AND goodsName LIKE ?")
+            args.add("%$name%")
+        }
+
+        // 分类 ID 精确查询
+        if (cid != null && cid > 0) {
+            sqlBuilder.append(" AND cid = ?")
+            args.add(cid)
+        }
+
+        // 动态排序（映射 UI 字段到数据库字段）
+        val dbSortField = mapSortFieldToDb(sortField)
+        val safeSortOrder = if (sortOrder == 0) "ASC" else "DESC"
+
+        // 白名单二次校验，绝对保证 SQL 安全
+        val validDbFields = listOf("createDate", "buyDate", "endDate", "price", "goodsName")
+        val finalSortField = if (dbSortField in validDbFields) dbSortField else "createDate"
+
+        sqlBuilder.append(" ORDER BY $finalSortField $safeSortOrder")
+
+        val sql = sqlBuilder.toString()
+        val query = SimpleSQLiteQuery(sql, args.toTypedArray())
+        return goodsItemDao.query(query)
+    }
+
+    // 内部数据类，用于传递搜索参数
+    private data class SearchGoodsParams(
+        val name: String?,
+        val cid: Long?,
+        val sortField: String?,
+        val sortOrder: Int?
+    )
+
+
+    private suspend fun createCategory(category: CategoryEntity) {
+        categoryDao.insert(category)
+    }
+
+    private suspend fun updateCategory(category: CategoryEntity) {
+        categoryDao.update(category)
+    }
+
+    private suspend fun deleteCategory(category: CategoryEntity) {
+        categoryDao.delete(category)
+    }
+}

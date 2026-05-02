@@ -1,9 +1,13 @@
 package cn.x.dailycost.ui.components
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -54,7 +58,7 @@ fun CameraCaptureComponent(
     ) { isGranted ->
         if (isGranted) {
             // 权限通过，创建 Uri 并启动相机
-            photoUri = createImageUri(context)
+            photoUri = createPrivateImageUri(context)
             cameraLauncher.launch(photoUri!!)
         }
     }
@@ -66,7 +70,7 @@ fun CameraCaptureComponent(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (hasPermission) {
-            photoUri = createImageUri(context)
+            photoUri = createPrivateImageUri(context)
             cameraLauncher.launch(photoUri!!)
         } else {
             permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -122,13 +126,40 @@ fun CameraCaptureComponent(
     }
 }
 
-// 创建用于保存照片的临时 Uri (适配 Android 16 分区存储)
-fun createImageUri(context: Context): Uri {
+
+fun createPrivateImageUri(context: Context): Uri {
+    // 1. 获取 App 在外部的私有 Pictures 目录
+    // 路径通常为：/storage/emulated/0/Android/data/你的包名/files/Pictures/
+    val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+    // 2. 创建图片文件
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-    val imageFile = File(context.cacheDir, "IMG_$timeStamp.jpg")
+    val imageFile = File(storageDir, "IMG_$timeStamp.jpg")
+
+    // 3. 通过 FileProvider 将私有 File 转换为安全的 content:// Uri
+    // 这个 Uri 就是你后续要存入数据库的值
     return FileProvider.getUriForFile(
         context,
         "${context.packageName}.fileprovider",
         imageFile
     )
+}
+
+fun createPicturesImageUri(context: Context): Uri? {
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val imageFileName = "IMG_$timeStamp.jpg"
+
+    // 设置照片的元数据
+    val contentValues = ContentValues().apply {
+        put(MediaStore.Images.Media.DISPLAY_NAME, imageFileName)
+        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        // 将照片存入公共的 Pictures 目录下（如果想存到相机胶卷，可改为 Environment.DIRECTORY_DCIM）
+        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+
+    }
+
+    val contentResolver = context.contentResolver
+    // 在媒体库中插入记录并获取 Uri
+    val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+    return imageUri
 }

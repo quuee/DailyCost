@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.TextStyle
@@ -54,17 +55,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import cn.x.dailycost.data.entity.CategoryEntity
 
 @Composable
 fun SearchBar(
-    categories: List<String>,
-    onSearch: (String, String) -> Unit
+    categories: List<CategoryEntity>,
+    onSearch: (CategoryEntity?, String) -> Unit
 ) {
     val density = LocalDensity.current
     val rowHeight = 36.dp // 搜索栏高度
     val px = remember { with(density) { rowHeight.toPx() } } // dp 转 像素
 
-    var selectedCategory by remember { mutableStateOf("全部分类") }
+    var selectedCategory: CategoryEntity by remember {
+        mutableStateOf(
+            CategoryEntity(
+                cid = 0L,
+                name = "全部分类",
+                color = Color.Transparent.toArgb(),
+                sort = 1
+            )
+        )
+    }
+
     var searchText by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
@@ -101,7 +113,7 @@ fun SearchBar(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = selectedCategory,
+                        text = selectedCategory.name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -212,7 +224,7 @@ fun SearchBar(
                                 else MaterialTheme.colorScheme.surfaceVariant
                             ) {
                                 Text(
-                                    text = category,
+                                    text = category.name,
                                     fontSize = 14.sp,
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -236,6 +248,6 @@ fun SearchBar(
 @Preview
 @Composable
 fun SPP() {
-    val categories = listOf("全部分类", "电子产品", "服装", "图书", "家居用品", "美妆")
-    SearchBar(categories, onSearch = { selectedCategory, searchText -> })
+//    val categories = listOf("全部分类", "电子产品", "服装", "图书", "家居用品", "美妆")
+//    SearchBar(categories, onSearch = { selectedCategory, searchText -> })
 }
