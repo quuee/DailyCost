@@ -33,7 +33,6 @@ data class MainState(
     val addGoodsItem: GoodsItemEntity? = null,
 
     val categories: List<CategoryEntity> = emptyList(),
-    val categoryId: Long? = null,
 
     // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
     val sortFiledList: List<String> = listOf("创建时间", "过期时间", "预计退役时间", "库存"),
@@ -128,6 +127,11 @@ class MainScreenVM(
                 }
             }
         }
+
+        viewModelScope.launch {
+            load()
+        }
+
     }
 
     override suspend fun handleIntent(intent: MainIntent) {
@@ -178,6 +182,13 @@ class MainScreenVM(
         goodsItemDao.insert(goodsItem)
     }
 
+    private suspend fun load(){
+        // 触发搜索（进入 Flow 管道）
+        setState { copy(isLoading = true) }
+        searchGoodsTriggerFlow.emit(
+            SearchGoodsParams("", 0L, "createDate", 1)
+        )
+    }
 
     private fun queryGoods(
         name: String?,
@@ -195,7 +206,7 @@ class MainScreenVM(
         }
 
         // 分类 ID 精确查询
-        if (cid != null && cid > 0) {
+        if (cid != null && cid > 0L) {
             sqlBuilder.append(" AND cid = ?")
             args.add(cid)
         }

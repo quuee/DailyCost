@@ -31,6 +31,7 @@ import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.SearchBar
 import cn.x.dailycost.ui.components.SortDropdownButton
+import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -51,7 +52,18 @@ fun HoldScreen(
                 onOptionSelected = { state.selectSortField = it })
         }
         stickyHeader {
-            SearchBar(state.categories, onSearch = { selectedCategory, searchText -> })
+            SearchBar(
+                state.categories,
+                onSearch = { selectedCategory, searchText ->
+                    mainVM.processIntent(
+                        MainIntent.SearchGoods(
+                            searchText,
+                            selectedCategory?.cid,
+                            null,
+                            null
+                        )
+                    )
+                })
         }
         items(state.goodsItems) { goods ->
             GoodsItem(goods)
