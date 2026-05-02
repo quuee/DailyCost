@@ -57,7 +57,7 @@ fun MyScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .clickable {  navController.navigate(Routes.DataSync) },
+                        .clickable {  navController.navigate(Routes.DataSync.route) },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("数据同步")
@@ -70,7 +70,7 @@ fun MyScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .clickable {  navController.navigate(Routes.CategoryManager) },
+                        .clickable {  navController.navigate(Routes.CategoryManager.route) },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("分类管理")

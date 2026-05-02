@@ -71,7 +71,7 @@ fun MainScreen(
                 }
             )
         },
-        ) { innerPadding ->
+    ) { innerPadding ->
         // 页面主要内容
         Box(
             modifier = Modifier
@@ -80,7 +80,7 @@ fun MainScreen(
 
             ) {
             when (selectedItem) {
-                0 -> HoldScreen()
+                0 -> HoldScreen(navController = navController)
                 1 -> MyScreen(navController)
             }
         }
@@ -150,7 +150,7 @@ private fun BottomBar(
 
         // 3. 添加突出的悬浮按钮 (叠加在凹槽上方)
         FloatingActionButton(
-            onClick = { navController.navigate(Routes.Goods) },
+            onClick = { navController.navigate(Routes.Goods.route.plus("/0")) },
             modifier = Modifier
                 .size(bottomBarHeight)
                 .align(Alignment.BottomCenter) // 居中于父布局底部

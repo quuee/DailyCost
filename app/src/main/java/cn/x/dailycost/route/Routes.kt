@@ -1,32 +1,17 @@
 package cn.x.dailycost.route
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 
-@Serializable
-sealed class Routes : Parcelable {
+
+sealed class Routes(val route: String)  {
 
     // 主界面 bottomBar
-    @Serializable
-    @Parcelize
-    data object Main : Routes()
+    data object Main : Routes("main")
 
-    @Serializable
-    @Parcelize
-    data object Hold : Routes()
 
-    @Serializable
-    @Parcelize
-    data object My : Routes()
+    data object Goods : Routes("goods")
 
-    @Serializable
-    @Parcelize
-    data object Goods : Routes()
-    @Serializable
-    @Parcelize
-    data object DataSync : Routes()
-    @Serializable
-    @Parcelize
-    data object CategoryManager : Routes()
+
+    data object DataSync : Routes("dataSync")
+
+    data object CategoryManager : Routes("categoryManager")
 }

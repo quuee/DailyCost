@@ -2,8 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.parcelize)
+//    alias(libs.plugins.kotlin.serialization)
+//    alias(libs.plugins.parcelize)
     alias(libs.plugins.ksp)
 }
 
@@ -87,7 +87,7 @@ dependencies {
     implementation(libs.bundles.coroutines)
 
     // Serialization
-    implementation(libs.kotlinx.serialization.json)
+//    implementation(libs.kotlinx.serialization.json)
 
     // Coil 图片加载
     implementation(libs.coil.compose)

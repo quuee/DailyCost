@@ -2,6 +2,7 @@ package cn.x.dailycost.ui.screen.goods
 
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,6 +49,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -60,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -75,6 +78,7 @@ import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.CameraCaptureComponent
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
+import cn.x.dailycost.ui.screen.main.MainEffect
 import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
 import cn.x.dailycost.util.formatTimestamp
@@ -85,10 +89,13 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun GoodsScreen(
     mainVM: MainScreenVM = koinViewModel(),
-    navController: NavController
+    navController: NavController,
+    gid: Long?,
 ) {
 
     val state by mainVM.state.collectAsState()
+
+    val context = LocalContext.current
 
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
     var showCategoryIconsBottomSheet by remember { mutableStateOf(false) }
@@ -106,7 +113,7 @@ fun GoodsScreen(
 
     var selectedCategory: CategoryEntity? by remember { mutableStateOf(null) }
     var selectIcon: AppIcons.IconItem? by remember { mutableStateOf(null) }
-    var price: Float by remember { mutableStateOf(0F) }
+    var price: Double by remember { mutableStateOf(0.0) }
     // priceText 文本中间值
     var priceText by remember { mutableStateOf("") }
     var goodsName by remember { mutableStateOf("") }
@@ -114,6 +121,24 @@ fun GoodsScreen(
     var photoUri by remember { mutableStateOf("") }
     var buyDateMillis by remember { mutableStateOf(0L) }
     var endDateMillis by remember { mutableStateOf(0L) }
+
+    // 初始加载
+    LaunchedEffect(Unit) {
+        if (gid != null && gid > 0L) {
+            // 获取物品数据
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        mainVM.effect.collect { effect ->
+            when (effect) {
+                is MainEffect.ShowMessage -> {
+                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                }
+
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -124,7 +149,10 @@ fun GoodsScreen(
                 navigationIcon = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.clickable(onClick = {
+                            navController.popBackStack()
+                        })
                     )
                 },
                 actions = {}
@@ -138,9 +166,12 @@ fun GoodsScreen(
                     .background(color = MaterialTheme.colorScheme.secondaryContainer),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                TextButton(onClick = {
+                TextButton(
+                    enabled = gid != null,
+                    onClick = {
+//                        mainVM.processIntent(MainIntent.DeleteGoods(gid!!))
 
-                }) {
+                    }) {
                     Text("Delete")
                 }
                 TextButton(onClick = {
@@ -287,7 +318,7 @@ fun GoodsScreen(
                                     if (newText.isEmpty() || newText.matches(regex)) {
                                         priceText = newText
                                         // 3. 安全地更新你的 price 变量（处理空字符串的情况）
-                                        price = newText.toFloatOrNull() ?: 0.00f
+                                        price = newText.toDoubleOrNull() ?: 0.0
                                     }
                                 },
 //                                placeholder = { Text(price.toString()) },

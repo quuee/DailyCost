@@ -27,7 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.GoodsItemEntity
+import cn.x.dailycost.route.Routes
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.SearchBar
 import cn.x.dailycost.ui.components.SortDropdownButton
@@ -39,6 +41,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HoldScreen(
     mainVM: MainScreenVM = koinViewModel(),
+    navController: NavController
 ) {
     val state by mainVM.state.collectAsState()
 
@@ -49,7 +52,9 @@ fun HoldScreen(
             AssetCard(
                 selectedField = state.selectSortField,
                 options = state.sortFiledList,
-                onOptionSelected = { state.selectSortField = it })
+                onOptionSelected = { state.selectSortField = it },
+                asset = state.asset
+            )
         }
         stickyHeader {
             SearchBar(
@@ -66,7 +71,7 @@ fun HoldScreen(
                 })
         }
         items(state.goodsItems) { goods ->
-            GoodsItem(goods)
+            GoodsItem(goods, onToggle = { navController.navigate(Routes.Goods.route+"/${it}") })
         }
     }
 }
@@ -75,7 +80,8 @@ fun HoldScreen(
 private fun AssetCard(
     selectedField: String,
     options: List<String>,
-    onOptionSelected: (String) -> Unit = {}
+    onOptionSelected: (String) -> Unit = {},
+    asset: Double
 ) {
     Card(
         modifier = Modifier
@@ -124,7 +130,7 @@ private fun AssetCard(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(Modifier.width(8.dp))
-                Text("0.00", style = MaterialTheme.typography.titleLarge)
+                Text(asset.toString(), style = MaterialTheme.typography.titleLarge)
             }
 
             // 第san行
@@ -159,9 +165,11 @@ private fun AssetCard(
 
 
 @Composable
-private fun GoodsItem(goodsItem: GoodsItemEntity) {
+private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
     Card(
-        modifier = Modifier.padding(4.dp)
+        modifier = Modifier
+            .padding(4.dp)
+            .clickable(onClick = { onToggle(goodsItem.gid) })
     ) {
         Row(
             modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),

@@ -127,9 +127,9 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 #hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 # KSP
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+#kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 #koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" } # 编译器插件是导致增量编译失效的元凶,除非n 的 @Single/@Factory 注解（而不是 DSL），否则不需要编译器。
-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+#parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 
 
 

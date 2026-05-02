@@ -1,9 +1,10 @@
 package cn.x.dailycost.data.entity
 
-import android.net.Uri
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.sql.Date
+
+
 
 @Entity(tableName = "goods_item")
 data class GoodsItemEntity(
@@ -15,7 +16,7 @@ data class GoodsItemEntity(
     val goodsName: String,
 
     // 购买价格
-    val price: Float,
+    val price: Double,
 
     // 分类id
     val cid: Long,

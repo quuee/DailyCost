@@ -14,6 +14,7 @@ import cn.x.dailycost.data.dao.CategoryDao
 import cn.x.dailycost.data.dao.GoodsItemDao
 import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.data.entity.GoodsItemEntity
+import cn.x.dailycost.util.SPUtil
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -29,9 +30,8 @@ data class MainState(
     override val isLoading: Boolean = false,
     override val error: String? = null,
 
+    val asset: Double = 0.0,
     val goodsItems: List<GoodsItemEntity> = emptyList(),
-    val addGoodsItem: GoodsItemEntity? = null,
-
     val categories: List<CategoryEntity> = emptyList(),
 
     // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
@@ -65,10 +65,9 @@ sealed class MainIntent : MviIntent {
 
 }
 
-// Effect - 副作用
+// Effect：一次性事件
 sealed class MainEffect : MviEffect {
     data class ShowMessage(val message: String) : MainEffect()
-    data class NavigateToDetail(val gid: Long) : MainEffect()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -104,6 +103,7 @@ class MainScreenVM(
                     setState {
                         copy(
                             goodsItems = items,
+                            asset = items.sumOf { it.price },
                             isLoading = false,
                             error = null
                         )
@@ -172,6 +172,7 @@ class MainScreenVM(
     private fun toggleGoods(gid: Long) {}
     private suspend fun deleteGoods(goodsItem: GoodsItemEntity) {
         goodsItemDao.delete(goodsItem)
+        sendEffect(MainEffect.ShowMessage("删除成功"))
     }
 
     private suspend fun updateGoods(goodsItem: GoodsItemEntity) {
@@ -182,8 +183,10 @@ class MainScreenVM(
         goodsItemDao.insert(goodsItem)
     }
 
-    private suspend fun load(){
+    private suspend fun load() {
         // 触发搜索（进入 Flow 管道）
+        // todo 得保存这几个条件
+//        SPUtil
         setState { copy(isLoading = true) }
         searchGoodsTriggerFlow.emit(
             SearchGoodsParams("", 0L, "createDate", 1)
