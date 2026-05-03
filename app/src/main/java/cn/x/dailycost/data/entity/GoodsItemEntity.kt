@@ -25,16 +25,16 @@ data class GoodsItemEntity(
     val iconInt: Int,
 
     // 购入日期
-    val buyDate: Long,
+    val buyDate: Long = System.currentTimeMillis(),
 
     // 退役日期(可选)
-    val endDate: Long,
+    val endDate: Long = System.currentTimeMillis(),
 
     // 备注(可选)
-    val remark: String,
+    val remark: String? = "",
 
     // 真实图片(可选)
-    val realPictureUri: String,
+    val realPictureUri: String? = "",
 
     //
     val createDate: Long = System.currentTimeMillis()

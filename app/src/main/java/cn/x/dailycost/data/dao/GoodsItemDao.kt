@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteQuery
@@ -22,6 +23,9 @@ interface GoodsItemDao {
 
     @Delete
     suspend fun delete(goodsItem: GoodsItemEntity)
+
+    @Query("select * from goods_item where gid = :gid")
+    suspend fun getById(gid: Long): GoodsItemEntity
 
     @RawQuery(observedEntities = [GoodsItemEntity::class])
     fun query(query: SupportSQLiteQuery): Flow<List<GoodsItemEntity>>

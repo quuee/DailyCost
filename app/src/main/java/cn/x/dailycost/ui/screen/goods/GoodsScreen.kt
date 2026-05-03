@@ -53,7 +53,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -78,6 +77,7 @@ import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.CameraCaptureComponent
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
+import cn.x.dailycost.ui.components.DecimalInputField
 import cn.x.dailycost.ui.screen.main.MainEffect
 import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
@@ -94,6 +94,7 @@ fun GoodsScreen(
 ) {
 
     val state by mainVM.state.collectAsState()
+    val goods = state.goodsFormData
 
     val context = LocalContext.current
 
@@ -111,21 +112,31 @@ fun GoodsScreen(
     // 相机card是否展开
     var cameraExpanded by remember { mutableStateOf(true) }
 
+    // 表单属性
     var selectedCategory: CategoryEntity? by remember { mutableStateOf(null) }
     var selectIcon: AppIcons.IconItem? by remember { mutableStateOf(null) }
-    var price: Double by remember { mutableStateOf(0.0) }
-    // priceText 文本中间值
-    var priceText by remember { mutableStateOf("") }
-    var goodsName by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf(0.0) }
+
     var remark by remember { mutableStateOf("") }
     var photoUri by remember { mutableStateOf("") }
     var buyDateMillis by remember { mutableStateOf(0L) }
     var endDateMillis by remember { mutableStateOf(0L) }
 
     // 初始加载
-    LaunchedEffect(Unit) {
+    LaunchedEffect(gid) {
         if (gid != null && gid > 0L) {
             // 获取物品数据
+            mainVM.processIntent(MainIntent.GetGoodsById(gid))
+
+//            goodsName = goods.goodsName
+//            price = goods.price
+//            priceText = goods.price.toString()
+//            remark = goods.remark ?: ""
+//            photoUri = goods.realPictureUri ?: ""
+//            buyDateMillis = goods.buyDate
+//            endDateMillis = goods.endDate
+//            selectIcon = AppIcons.IconItem(resInt = goodsFormData.iconInt, name = "")
+//            selectedCategory =
         }
     }
 
@@ -139,6 +150,7 @@ fun GoodsScreen(
             }
         }
     }
+
 
     Scaffold(
         modifier = Modifier
@@ -167,29 +179,49 @@ fun GoodsScreen(
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 TextButton(
-                    enabled = gid != null,
+                    enabled = gid != null && gid > 0L,
                     onClick = {
-//                        mainVM.processIntent(MainIntent.DeleteGoods(gid!!))
-
+                        // mainVM.processIntent(MainIntent.DeleteGoods(gid))
                     }) {
                     Text("Delete")
                 }
                 TextButton(onClick = {
-                    mainVM.processIntent(
-                        MainIntent.CreateGoods(
-                            GoodsItemEntity(
-                                gid = 0L,
-                                goodsName = goodsName,
-                                price = price,
-                                cid = selectedCategory?.cid ?: 0L,
-                                iconInt = selectIcon?.resInt ?: R.drawable.ic_package,
-                                buyDate = buyDateMillis,
-                                endDate = endDateMillis,
-                                remark = remark,
-                                realPictureUri = photoUri,
+                    if (state.goodsFormData.gid > 0L) {
+                        // 编辑
+                        mainVM.processIntent(
+                            MainIntent.UpdateGoods(
+                                GoodsItemEntity(
+                                    gid = goods.gid,
+                                    goodsName = goods.goodsName,
+                                    price = goods.price,
+                                    cid = selectedCategory?.cid ?: 0L,
+                                    iconInt = selectIcon?.resInt ?: R.drawable.ic_package,
+                                    buyDate = buyDateMillis,
+                                    endDate = endDateMillis,
+                                    remark = remark,
+                                    realPictureUri = photoUri,
+                                )
                             )
                         )
-                    )
+                    } else {
+                        // 新增
+                        mainVM.processIntent(
+                            MainIntent.CreateGoods(
+                                GoodsItemEntity(
+                                    gid = 0L,
+                                    goodsName = goods.goodsName,
+                                    price = goods.price,
+                                    cid = selectedCategory?.cid ?: 0L,
+                                    iconInt = selectIcon?.resInt ?: R.drawable.ic_package,
+                                    buyDate = buyDateMillis,
+                                    endDate = endDateMillis,
+                                    remark = remark,
+                                    realPictureUri = photoUri,
+                                )
+                            )
+                        )
+
+                    }
                     navController.popBackStack()
                 }) {
                     Text("Save")
@@ -206,9 +238,9 @@ fun GoodsScreen(
             // 输入名称
             item {
                 OutlinedTextField(
-                    value = goodsName,
+                    value = goods.goodsName,
                     onValueChange = { newText ->
-                        goodsName = newText
+                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(newText, null))
                     },
                     placeholder = { Text("输入物品名称") },
                     keyboardOptions = KeyboardOptions(
@@ -309,35 +341,12 @@ fun GoodsScreen(
                                 modifier = Modifier.padding(8.dp)
                             )
                             HorizontalDivider()
-                            OutlinedTextField(
-                                value = priceText,
-                                onValueChange = { newText ->
-                                    // 2. 核心逻辑：使用正则表达式过滤非法输入
-                                    // 允许输入数字、小数点，且保证只有一个小数点，小数点后最多保留2位
-                                    val regex = Regex("^\\d*\\.?\\d{0,2}$")
-                                    if (newText.isEmpty() || newText.matches(regex)) {
-                                        priceText = newText
-                                        // 3. 安全地更新你的 price 变量（处理空字符串的情况）
-                                        price = newText.toDoubleOrNull() ?: 0.0
-                                    }
+                            DecimalInputField(
+                                value = if(goods.price>0.0) goods.price else price,
+                                onValueChange = {
+                                    price = it
+                                    mainVM.processIntent(MainIntent.ChangeGoodsAttr(null, price))
                                 },
-//                                placeholder = { Text(price.toString()) },
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Number,
-                                    imeAction = ImeAction.Done
-                                ),
-                                singleLine = true,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color.Transparent,   // 聚焦时边框透明（去掉边框/下划线）
-                                    unfocusedBorderColor = Color.Transparent, // 未聚焦时边框透明（去掉边框/下划线）
-                                    disabledBorderColor = Color.Transparent   // 禁用状态边框透明
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-//                                        shape = RoundedCornerShape(8.dp),
-                                    ),
                             )
                         }
                     }

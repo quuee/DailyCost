@@ -19,6 +19,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -31,6 +34,13 @@ data class MainState(
     override val error: String? = null,
 
     val asset: Double = 0.0,
+    val goodsFormData: GoodsItemEntity = GoodsItemEntity(
+        gid = 0L,
+        goodsName = "",
+        price = 0.0,
+        cid = 0L,
+        iconInt = 0,
+    ),
     val goodsItems: List<GoodsItemEntity> = emptyList(),
     val categories: List<CategoryEntity> = emptyList(),
 
@@ -51,6 +61,8 @@ sealed class MainIntent : MviIntent {
     data class CreateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
     data class DeleteGoods(val goodsItem: GoodsItemEntity) : MainIntent()
     data class UpdateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
+    data class ChangeGoodsAttr(val goodsName: String?,val price: Double?,) : MainIntent()
+    data class GetGoodsById(val gid: Long) : MainIntent()
 
     data class SearchGoods(
         val name: String?,
@@ -141,6 +153,8 @@ class MainScreenVM(
             is MainIntent.DeleteGoods -> deleteGoods(intent.goodsItem)
             is MainIntent.CreateGoods -> createGoods(intent.goodsItem)
             is MainIntent.UpdateGoods -> updateGoods(intent.goodsItem)
+            is MainIntent.ChangeGoodsAttr -> changeGoodsAttr(intent.goodsName,intent.price)
+            is MainIntent.GetGoodsById -> getGoodsById(intent.gid)
             is MainIntent.SearchGoods -> {
                 // 触发搜索（进入 Flow 管道）
                 setState { copy(isLoading = true) }
@@ -179,18 +193,41 @@ class MainScreenVM(
         goodsItemDao.update(goodsItem)
     }
 
+    private fun changeGoodsAttr(goodsName: String?, price: Double?) {
+        goodsName?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(goodsName = goodsName)
+                )
+            }
+        }
+        price?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(price = price)
+                )
+            }
+        }
+    }
+
     private suspend fun createGoods(goodsItem: GoodsItemEntity) {
+        // todo 空校验
         goodsItemDao.insert(goodsItem)
     }
 
     private suspend fun load() {
         // 触发搜索（进入 Flow 管道）
         // todo 得保存这几个条件
-//        SPUtil
+        // SPUtil
         setState { copy(isLoading = true) }
         searchGoodsTriggerFlow.emit(
             SearchGoodsParams("", 0L, "createDate", 1)
         )
+    }
+
+    private suspend fun getGoodsById(gid: Long) {
+        val temp = goodsItemDao.getById(gid)
+        setState { copy(goodsFormData = temp) }
     }
 
     private fun queryGoods(
@@ -239,6 +276,7 @@ class MainScreenVM(
 
 
     private suspend fun createCategory(category: CategoryEntity) {
+        // todo 空校验
         categoryDao.insert(category)
     }
 
