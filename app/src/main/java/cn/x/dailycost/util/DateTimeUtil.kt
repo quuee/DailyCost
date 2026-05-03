@@ -31,7 +31,7 @@ fun getDaysDifference(givenTimeMillis: Long): Long {
     return ChronoUnit.DAYS.between(givenDate, nowDate)
 }
 
-fun getDaysDifference(oldTime:Long,newTime:Long): Long {
+fun getDaysDifference(oldTime: Long, newTime: Long): Long {
     val oldTimeInstant = Instant.ofEpochMilli(oldTime)
     val newTimeInstant = Instant.ofEpochMilli(newTime)
 

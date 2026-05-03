@@ -61,6 +61,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
@@ -465,7 +466,7 @@ fun GoodsScreen(
                                         // 这里可以拿到拍好的照片 Uri，进行上传服务器等后续业务处理
                                         // content://cn.x.dailycost.debug.fileprovider/camera_cache/IMG_20260502_181434.jpg
                                         Log.d("DEBUG PHOTO", "onPhotoCaptured: $uri")
-                                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(photoUri =uri.path.toString() ))
+                                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(photoUri = uri.path.toString()))
                                     }
                                 )
                             }
@@ -654,6 +655,7 @@ private fun CategoryIconsSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = (LocalConfiguration.current.screenHeightDp / 4 * 3).dp)
             .padding(4.dp)
     ) {
         Text(
@@ -666,8 +668,8 @@ private fun CategoryIconsSheet(
         LazyVerticalGrid(
             columns = GridCells.Fixed(5),
             modifier = Modifier
-                .fillMaxWidth(),
-//                .heightIn(max = (LocalWindowInfo.current.containerSize.height).dp),
+                .fillMaxWidth()
+                ,
             contentPadding = PaddingValues(12.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -701,6 +703,7 @@ private fun CategoryIconsSheet(
                 }
             }
         }
+
         Button(
             onClick = {
                 // 执行某些操作...
