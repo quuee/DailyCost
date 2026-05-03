@@ -21,13 +21,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import cn.x.dailycost.R
 import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.route.Routes
 import cn.x.dailycost.ui.components.AppIcons
@@ -35,7 +40,9 @@ import cn.x.dailycost.ui.components.SearchBar
 import cn.x.dailycost.ui.components.SortDropdownButton
 import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
+import cn.x.dailycost.util.getDaysDifference
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.temporal.ChronoUnit
 
 
 @Composable
@@ -45,6 +52,16 @@ fun HoldScreen(
 ) {
     val state by mainVM.state.collectAsState()
 
+    val everyDayCostTotal by remember {
+        derivedStateOf {
+            state.goodsItems.sumOf { goods ->
+                val usedDays = getDaysDifference(goods.buyDate)
+                // 注意处理 usedDays 为 0 的情况，防止除以 0 报错
+                if (usedDays > 0) goods.price / usedDays else 0.0
+            }
+        }
+    }
+
     LazyColumn(
 
     ) {
@@ -53,7 +70,9 @@ fun HoldScreen(
                 selectedField = state.selectSortField,
                 options = state.sortFiledList,
                 onOptionSelected = { state.selectSortField = it },
-                asset = state.asset
+                asset = state.asset,
+                totalCount = state.goodsItems.size,
+                everyDayCostTotal
             )
         }
         stickyHeader {
@@ -71,7 +90,7 @@ fun HoldScreen(
                 })
         }
         items(state.goodsItems) { goods ->
-            GoodsItem(goods, onToggle = { navController.navigate(Routes.Goods.route+"/${it}") })
+            GoodsItem(goods, onToggle = { navController.navigate(Routes.Goods.route + "/${it}") })
         }
     }
 }
@@ -81,7 +100,9 @@ private fun AssetCard(
     selectedField: String,
     options: List<String>,
     onOptionSelected: (String) -> Unit = {},
-    asset: Double
+    asset: Double,
+    totalCount: Int,
+    everyDayCostTotal: Double
 ) {
     Card(
         modifier = Modifier
@@ -142,12 +163,12 @@ private fun AssetCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column() {
-                    Text("¥ 0.00", style = MaterialTheme.typography.bodyMedium)
+                    Text("¥ ${"%.2f".format(everyDayCostTotal)}", style = MaterialTheme.typography.bodyMedium)
                     Text("日均成本", style = MaterialTheme.typography.bodyMedium)
                 }
 
                 Column() {
-                    Text("1", style = MaterialTheme.typography.bodyMedium)
+                    Text(totalCount.toString(), style = MaterialTheme.typography.bodyMedium)
                     Text("物品总数", style = MaterialTheme.typography.bodyMedium)
                 }
 
@@ -166,6 +187,8 @@ private fun AssetCard(
 
 @Composable
 private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
+    val usedDays = getDaysDifference(goodsItem.buyDate)
+    val everyDayMoney = "%.2f".format(goodsItem.price / usedDays)
     Card(
         modifier = Modifier
             .padding(4.dp)
@@ -183,16 +206,21 @@ private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
             Spacer(modifier = Modifier.width(8.dp))
             Column() {
                 Text(goodsItem.goodsName, style = MaterialTheme.typography.titleMedium)
-                Text("¥ ${goodsItem.price}  日均：20/天", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "¥ ${goodsItem.price}  日均：${everyDayMoney}/天",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
             Spacer(modifier = Modifier.weight(1f))
             Column(
                 horizontalAlignment = Alignment.End
             ) {
-                Text("137 天", style = MaterialTheme.typography.titleLarge)
-                Text("667天后退役", style = MaterialTheme.typography.bodySmall)
+                Text("${usedDays} 天", style = MaterialTheme.typography.titleLarge)
+                if (goodsItem.endDate > goodsItem.buyDate) {
+                    val days = getDaysDifference(goodsItem.buyDate,goodsItem.endDate)
+                    Text("${days} 天后退役", style = MaterialTheme.typography.bodySmall)
+                }
             }
-
         }
     }
 

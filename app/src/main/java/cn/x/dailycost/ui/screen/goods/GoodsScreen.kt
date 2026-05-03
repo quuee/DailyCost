@@ -71,7 +71,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import cn.x.dailycost.R
 import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.ui.components.AppIcons
@@ -113,30 +112,14 @@ fun GoodsScreen(
     var cameraExpanded by remember { mutableStateOf(true) }
 
     // 表单属性
-    var selectedCategory: CategoryEntity? by remember { mutableStateOf(null) }
-    var selectIcon: AppIcons.IconItem? by remember { mutableStateOf(null) }
     var price by remember { mutableStateOf(0.0) }
 
-    var remark by remember { mutableStateOf("") }
-    var photoUri by remember { mutableStateOf("") }
-    var buyDateMillis by remember { mutableStateOf(0L) }
-    var endDateMillis by remember { mutableStateOf(0L) }
 
     // 初始加载
     LaunchedEffect(gid) {
         if (gid != null && gid > 0L) {
             // 获取物品数据
             mainVM.processIntent(MainIntent.GetGoodsById(gid))
-
-//            goodsName = goods.goodsName
-//            price = goods.price
-//            priceText = goods.price.toString()
-//            remark = goods.remark ?: ""
-//            photoUri = goods.realPictureUri ?: ""
-//            buyDateMillis = goods.buyDate
-//            endDateMillis = goods.endDate
-//            selectIcon = AppIcons.IconItem(resInt = goodsFormData.iconInt, name = "")
-//            selectedCategory =
         }
     }
 
@@ -146,7 +129,6 @@ fun GoodsScreen(
                 is MainEffect.ShowMessage -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
-
             }
         }
     }
@@ -194,12 +176,12 @@ fun GoodsScreen(
                                     gid = goods.gid,
                                     goodsName = goods.goodsName,
                                     price = goods.price,
-                                    cid = selectedCategory?.cid ?: 0L,
-                                    iconInt = selectIcon?.resInt ?: R.drawable.ic_package,
-                                    buyDate = buyDateMillis,
-                                    endDate = endDateMillis,
-                                    remark = remark,
-                                    realPictureUri = photoUri,
+                                    cid = goods.cid,
+                                    iconInt = goods.iconInt,
+                                    buyDate = goods.buyDate,
+                                    endDate = goods.endDate,
+                                    remark = goods.remark,
+                                    realPictureUri = goods.realPictureUri,
                                 )
                             )
                         )
@@ -211,12 +193,12 @@ fun GoodsScreen(
                                     gid = 0L,
                                     goodsName = goods.goodsName,
                                     price = goods.price,
-                                    cid = selectedCategory?.cid ?: 0L,
-                                    iconInt = selectIcon?.resInt ?: R.drawable.ic_package,
-                                    buyDate = buyDateMillis,
-                                    endDate = endDateMillis,
-                                    remark = remark,
-                                    realPictureUri = photoUri,
+                                    cid = goods.cid,
+                                    iconInt = goods.iconInt,
+                                    buyDate = goods.buyDate,
+                                    endDate = goods.endDate,
+                                    remark = goods.remark,
+                                    realPictureUri = goods.realPictureUri,
                                 )
                             )
                         )
@@ -240,7 +222,11 @@ fun GoodsScreen(
                 OutlinedTextField(
                     value = goods.goodsName,
                     onValueChange = { newText ->
-                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(newText, null))
+                        mainVM.processIntent(
+                            MainIntent.ChangeGoodsAttr(
+                                goodsName = newText,
+                            )
+                        )
                     },
                     placeholder = { Text("输入物品名称") },
                     keyboardOptions = KeyboardOptions(
@@ -290,9 +276,11 @@ fun GoodsScreen(
                                 modifier = Modifier.padding(8.dp)
                             )
                             HorizontalDivider()
-                            selectedCategory?.let {
-                                Text(it.name)
+                            if (goods.cid > 0L) {
+                                val result = state.categories.find { it.cid == goods.cid }
+                                Text(result?.name ?: "全部分类")
                             }
+
                         }
                     }
                     item {
@@ -310,21 +298,16 @@ fun GoodsScreen(
                                 modifier = Modifier.padding(8.dp)
                             )
                             HorizontalDivider()
-                            selectIcon?.let {
-                                Row() {
-                                    // 使用 key 包裹 Icon，当 resInt 变化时强制重新创建 Icon 组件
-                                    key(it.resInt) {
-                                        Icon(
-                                            painter = painterResource(it.resInt),
-                                            modifier = Modifier
-                                                .size(36.dp),
-                                            contentDescription = null,
-                                            tint = null, // 影响默认颜色
-                                        )
-                                    }
-                                    Text(it.name)
-                                }
+                            key(goods.iconInt) {
+                                Icon(
+                                    painter = painterResource(goods.iconInt),
+                                    modifier = Modifier
+                                        .size(36.dp),
+                                    contentDescription = null,
+                                    tint = null, // 影响默认颜色
+                                )
                             }
+
                         }
                     }
                     item {
@@ -342,10 +325,14 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             DecimalInputField(
-                                value = if(goods.price>0.0) goods.price else price,
+                                value = if (goods.price > 0.0) goods.price else price,
                                 onValueChange = {
                                     price = it
-                                    mainVM.processIntent(MainIntent.ChangeGoodsAttr(null, price))
+                                    mainVM.processIntent(
+                                        MainIntent.ChangeGoodsAttr(
+                                            price = price,
+                                        )
+                                    )
                                 },
                             )
                         }
@@ -366,7 +353,7 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             Text(
-                                text = formatTimestamp(buyDateMillis),
+                                text = formatTimestamp(goods.buyDate),
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -387,7 +374,7 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             Text(
-                                text = formatTimestamp(endDateMillis),
+                                text = formatTimestamp(goods.endDate),
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -398,8 +385,14 @@ fun GoodsScreen(
             // 备注
             item {
                 TextField(
-                    value = remark,              // 绑定的文本值
-                    onValueChange = { remark = it }, // 更新文本的回调
+                    value = goods.remark ?: "",              // 绑定的文本值
+                    onValueChange = {
+                        mainVM.processIntent(
+                            MainIntent.ChangeGoodsAttr(
+                                remark = it
+                            )
+                        )
+                    }, // 更新文本的回调
                     // 行数限制 - 核心配置
                     minLines = 4,                   // 至少显示4行
                     maxLines = 8,                   // 最多展开到6行后开始滚动
@@ -472,7 +465,7 @@ fun GoodsScreen(
                                         // 这里可以拿到拍好的照片 Uri，进行上传服务器等后续业务处理
                                         // content://cn.x.dailycost.debug.fileprovider/camera_cache/IMG_20260502_181434.jpg
                                         Log.d("DEBUG PHOTO", "onPhotoCaptured: $uri")
-                                        photoUri = uri.path.toString()
+                                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(photoUri =uri.path.toString() ))
                                     }
                                 )
                             }
@@ -492,7 +485,12 @@ fun GoodsScreen(
             CategorySheet(
                 categories = state.categories,
                 onSelect = {
-                    selectedCategory = it
+//                    selectedCategory = it
+                    mainVM.processIntent(
+                        MainIntent.ChangeGoodsAttr(
+                            cid = it.cid,
+                        )
+                    )
                 },
                 onClose = {
                     showCategoryBottomSheet = false
@@ -505,8 +503,14 @@ fun GoodsScreen(
             onDismissRequest = { showCategoryIconsBottomSheet = false } // 关闭弹窗
         ) {
             CategoryIconsSheet(
-                selectedIcon = selectIcon,
-                onSelectIcon = { selectIcon = it },
+                iconInt = goods.iconInt,
+                onSelectIcon = {
+                    mainVM.processIntent(
+                        MainIntent.ChangeGoodsAttr(
+                            iconInt = it,
+                        )
+                    )
+                },
                 onClose = {
                     showCategoryIconsBottomSheet = false
                 }
@@ -521,11 +525,21 @@ fun GoodsScreen(
                     TextButton(onClick = {
                         // datePickerState.selectedDateMillis 获取选择的时间戳
                         if (showBuyDateDialog) {
-                            buyDateMillis = datePickerState.selectedDateMillis ?: 0L
+                            val buyDateMillis = datePickerState.selectedDateMillis ?: 0L
+                            mainVM.processIntent(
+                                MainIntent.ChangeGoodsAttr(
+                                    buyDateMillis = buyDateMillis
+                                )
+                            )
                             showBuyDateDialog = false
                         }
                         if (showEndDateDialog) {
-                            endDateMillis = datePickerState.selectedDateMillis ?: 0L
+                            val endDateMillis = datePickerState.selectedDateMillis ?: 0L
+                            mainVM.processIntent(
+                                MainIntent.ChangeGoodsAttr(
+                                    endDateMillis = endDateMillis
+                                )
+                            )
                             showEndDateDialog = false
                         }
 
@@ -632,8 +646,8 @@ private fun CategorySheet(
 
 @Composable
 private fun CategoryIconsSheet(
-    selectedIcon: AppIcons.IconItem?,
-    onSelectIcon: (AppIcons.IconItem) -> Unit,
+    iconInt: Int?,
+    onSelectIcon: (Int) -> Unit,
     onClose: () -> Unit,
 ) {
 
@@ -666,13 +680,13 @@ private fun CategoryIconsSheet(
                         .padding(4.dp)
                         // 根据 isSelected 状态动态设置边框
                         .border(
-                            width = if (selectedIcon == iconItem) 1.dp else 0.dp,
-                            color = if (selectedIcon == iconItem) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            width = if (iconInt == iconItem.resInt) 1.dp else 0.dp,
+                            color = if (iconInt == iconItem.resInt) MaterialTheme.colorScheme.primary else Color.Transparent,
                             shape = RoundedCornerShape(8.dp) // 可选：添加圆角
                         )
                         // 添加点击事件
                         .clickable {
-                            onSelectIcon(iconItem)
+                            onSelectIcon(iconItem.resInt)
                         },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {

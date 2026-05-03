@@ -10,6 +10,7 @@ import cn.q.ui.base.MviEffect
 import cn.q.ui.base.MviIntent
 import cn.q.ui.base.MviState
 import cn.q.ui.base.MviViewModel
+import cn.x.dailycost.R
 import cn.x.dailycost.data.dao.CategoryDao
 import cn.x.dailycost.data.dao.GoodsItemDao
 import cn.x.dailycost.data.entity.CategoryEntity
@@ -39,7 +40,7 @@ data class MainState(
         goodsName = "",
         price = 0.0,
         cid = 0L,
-        iconInt = 0,
+        iconInt = R.drawable.ic_package,
     ),
     val goodsItems: List<GoodsItemEntity> = emptyList(),
     val categories: List<CategoryEntity> = emptyList(),
@@ -61,7 +62,18 @@ sealed class MainIntent : MviIntent {
     data class CreateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
     data class DeleteGoods(val goodsItem: GoodsItemEntity) : MainIntent()
     data class UpdateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
-    data class ChangeGoodsAttr(val goodsName: String?,val price: Double?,) : MainIntent()
+    data class ChangeGoodsAttr(
+        val goodsName: String? = null,
+        val price: Double? = null,
+        val cid: Long? = null,
+        val iconInt: Int? = null,
+        val buyDateMillis: Long? = null,
+        val endDateMillis: Long? = null,
+        val photoUri: String? = null,
+        val remark: String? = null,
+    ) :
+        MainIntent()
+
     data class GetGoodsById(val gid: Long) : MainIntent()
 
     data class SearchGoods(
@@ -153,7 +165,17 @@ class MainScreenVM(
             is MainIntent.DeleteGoods -> deleteGoods(intent.goodsItem)
             is MainIntent.CreateGoods -> createGoods(intent.goodsItem)
             is MainIntent.UpdateGoods -> updateGoods(intent.goodsItem)
-            is MainIntent.ChangeGoodsAttr -> changeGoodsAttr(intent.goodsName,intent.price)
+            is MainIntent.ChangeGoodsAttr -> changeGoodsAttr(
+                intent.goodsName,
+                intent.price,
+                intent.cid,
+                intent.iconInt,
+                intent.buyDateMillis,
+                intent.endDateMillis,
+                intent.photoUri,
+                intent.remark,
+            )
+
             is MainIntent.GetGoodsById -> getGoodsById(intent.gid)
             is MainIntent.SearchGoods -> {
                 // 触发搜索（进入 Flow 管道）
@@ -193,7 +215,16 @@ class MainScreenVM(
         goodsItemDao.update(goodsItem)
     }
 
-    private fun changeGoodsAttr(goodsName: String?, price: Double?) {
+    private fun changeGoodsAttr(
+        goodsName: String?,
+        price: Double?,
+        cid: Long?,
+        iconInt: Int?,
+        buyDateMillis: Long?,
+        endDateMillis: Long?,
+        photoUri: String?,
+        remark: String?,
+    ) {
         goodsName?.let {
             setState {
                 copy(
@@ -205,6 +236,48 @@ class MainScreenVM(
             setState {
                 copy(
                     goodsFormData = goodsFormData.copy(price = price)
+                )
+            }
+        }
+        cid?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(cid = cid)
+                )
+            }
+        }
+        iconInt?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(iconInt = iconInt)
+                )
+            }
+        }
+        buyDateMillis?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(buyDate = buyDateMillis)
+                )
+            }
+        }
+        endDateMillis?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(endDate = endDateMillis)
+                )
+            }
+        }
+        photoUri?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(realPictureUri = photoUri)
+                )
+            }
+        }
+        remark?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(remark = remark)
                 )
             }
         }

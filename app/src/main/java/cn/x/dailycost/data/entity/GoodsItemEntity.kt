@@ -3,7 +3,7 @@ package cn.x.dailycost.data.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
+import cn.x.dailycost.R
 
 
 @Entity(tableName = "goods_item")
@@ -19,7 +19,7 @@ data class GoodsItemEntity(
     val price: Double,
 
     // 分类id
-    val cid: Long,
+    val cid: Long = 0L,
 
     // 系统图标icon
     val iconInt: Int,
