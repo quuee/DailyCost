@@ -76,6 +76,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.data.entity.GoodsItemEntity
@@ -383,7 +384,7 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             Text(
-                                text = formatTimestamp(goods.endDate),
+                                text = if (goods.endDate > 0L) formatTimestamp(goods.endDate) else "",
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -470,11 +471,12 @@ fun GoodsScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
                                 CameraCaptureComponent(
                                     modifier = Modifier.fillMaxSize(),
+                                    existingPhotoUri = if (goods.realPictureUri.isNullOrBlank()) null else goods.realPictureUri.toUri(),
                                     onPhotoCaptured = { uri ->
                                         // 这里可以拿到拍好的照片 Uri，进行上传服务器等后续业务处理
                                         // content://cn.x.dailycost.debug.fileprovider/camera_cache/IMG_20260502_181434.jpg
                                         Log.d("DEBUG PHOTO", "onPhotoCaptured: $uri")
-                                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(photoUri = uri.path.toString()))
+                                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(photoUri = uri.toString()))
                                     }
                                 )
                             }
@@ -662,7 +664,17 @@ private fun CategoryIconsSheet(
     // 1. 定义当前选中的 Tab 索引状态
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     // 2. 定义 Tab 的标题
-    val tabTitles = listOf("全部分类", "电子数码","护肤美妆","家用电器","户外运动","日常工具","乐器","家具","其他",)
+    val tabTitles = listOf(
+        "全部分类",
+        "电子数码",
+        "护肤美妆",
+        "家用电器",
+        "户外运动",
+        "日常工具",
+        "乐器",
+        "家具",
+        "其他",
+    )
     val tabScrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -704,15 +716,15 @@ private fun CategoryIconsSheet(
         HorizontalDivider()
         // 4. 根据索引切换下方的页面内容
         when (selectedTabIndex) {
-            0 -> IconContent(iconInt,onSelectIcon, AppIcons.allIcons)
-            1 -> IconContent(iconInt,onSelectIcon, AppIcons.digitalIcons)
-            2 -> IconContent(iconInt,onSelectIcon, AppIcons.beautyProductsIcons)
-            3 -> IconContent(iconInt,onSelectIcon, AppIcons.homeAppliances)
-            4 -> IconContent(iconInt,onSelectIcon, AppIcons.outdoorSports)
-            5 -> IconContent(iconInt,onSelectIcon, AppIcons.toolIcons)
-            6 -> IconContent(iconInt,onSelectIcon, AppIcons.instrumentIcons)
-            7 -> IconContent(iconInt,onSelectIcon, AppIcons.furnitureIcons)
-            8 -> IconContent(iconInt,onSelectIcon, AppIcons.otherIcons)
+            0 -> IconContent(iconInt, onSelectIcon, AppIcons.allIcons)
+            1 -> IconContent(iconInt, onSelectIcon, AppIcons.digitalIcons)
+            2 -> IconContent(iconInt, onSelectIcon, AppIcons.beautyProductsIcons)
+            3 -> IconContent(iconInt, onSelectIcon, AppIcons.homeAppliances)
+            4 -> IconContent(iconInt, onSelectIcon, AppIcons.outdoorSports)
+            5 -> IconContent(iconInt, onSelectIcon, AppIcons.toolIcons)
+            6 -> IconContent(iconInt, onSelectIcon, AppIcons.instrumentIcons)
+            7 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
+            8 -> IconContent(iconInt, onSelectIcon, AppIcons.otherIcons)
         }
 
 //        Text(
@@ -721,7 +733,6 @@ private fun CategoryIconsSheet(
 //            modifier = Modifier.fillMaxWidth(),
 //            textAlign = TextAlign.Center
 //        )
-
 
 
         Button(
@@ -741,13 +752,12 @@ private fun CategoryIconsSheet(
 private fun IconContent(
     iconInt: Int?,
     onSelectIcon: (Int) -> Unit,
-    categoryIcons:List<AppIcons.IconItem>
-){
+    categoryIcons: List<AppIcons.IconItem>
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
         modifier = Modifier
-            .fillMaxWidth()
-        ,
+            .fillMaxWidth(),
         contentPadding = PaddingValues(12.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)

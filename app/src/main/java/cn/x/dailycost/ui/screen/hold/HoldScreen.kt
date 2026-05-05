@@ -198,11 +198,16 @@ private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
             modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(goodsItem.iconInt),
-                modifier = Modifier.size(36.dp),
-                contentDescription = null
-            )
+            if(goodsItem.realPictureUri.isNullOrBlank()){
+                Image(
+                    painter = painterResource(goodsItem.iconInt),
+                    modifier = Modifier.size(36.dp),
+                    contentDescription = null
+                )
+            }else{
+
+            }
+
             Spacer(modifier = Modifier.width(8.dp))
             Column() {
                 Text(goodsItem.goodsName, style = MaterialTheme.typography.titleMedium)

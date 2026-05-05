@@ -31,13 +31,13 @@ data class GoodsItemEntity(
     val recoverHealthMoney: Double? = 0.0,
 
     // 退役日期(可选)
-    val endDate: Long = System.currentTimeMillis(),
+    val endDate: Long = 0L,
 
     // 备注(可选)
-    val remark: String? = "",
+    val remark: String?,
 
     // 真实图片(可选)
-    val realPictureUri: String? = "",
+    val realPictureUri: String?,
 
     // 创建时间
     val createDate: Long = System.currentTimeMillis()

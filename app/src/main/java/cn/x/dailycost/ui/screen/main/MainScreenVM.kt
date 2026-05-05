@@ -41,6 +41,8 @@ data class MainState(
         price = 0.0,
         cid = 0L,
         iconInt = R.drawable.ic_package,
+        remark = "",
+        realPictureUri = ""
     ),
     val goodsItems: List<GoodsItemEntity> = emptyList(),
     val categories: List<CategoryEntity> = emptyList(),

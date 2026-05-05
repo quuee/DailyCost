@@ -36,11 +36,20 @@ import java.util.*
 @Composable
 fun CameraCaptureComponent(
     modifier: Modifier = Modifier,
+    existingPhotoUri: Uri? = null,  // 新增参数：已有的图片 URI
     onPhotoCaptured: (Uri) -> Unit = {}
 ) {
     val context = LocalContext.current
     var photoUri by remember { mutableStateOf<Uri?>(null) }
-    var showPhoto by remember { mutableStateOf(false) }
+    var showPhoto by remember { mutableStateOf(false) }  // 根据已有 URI 初始化显示状态
+
+    // 如果传入已有 URI，使用它
+    LaunchedEffect(existingPhotoUri) {
+        if (existingPhotoUri != null && photoUri == null) {
+            photoUri = existingPhotoUri
+        }
+        showPhoto = existingPhotoUri != null
+    }
 
     // 1. 拍照结果回调的启动器
     val cameraLauncher = rememberLauncherForActivityResult(
