@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -43,7 +44,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -53,6 +56,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,6 +69,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -81,6 +86,9 @@ import cn.x.dailycost.ui.components.DecimalInputField
 import cn.x.dailycost.ui.screen.main.MainEffect
 import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
+import cn.x.dailycost.ui.screen.my.ReceiveContent
+import cn.x.dailycost.ui.screen.my.SendContent
+import cn.x.dailycost.ui.theme.GradientStart
 import cn.x.dailycost.util.formatTimestamp
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -651,58 +659,70 @@ private fun CategoryIconsSheet(
     onSelectIcon: (Int) -> Unit,
     onClose: () -> Unit,
 ) {
-
+    // 1. 定义当前选中的 Tab 索引状态
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    // 2. 定义 Tab 的标题
+    val tabTitles = listOf("全部分类", "电子数码","护肤美妆","家用电器","户外运动","日常工具","乐器","家具","其他",)
+    val tabScrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = (LocalConfiguration.current.screenHeightDp / 4 * 3).dp)
             .padding(4.dp)
     ) {
-        Text(
-            "选择图标",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        HorizontalDivider()
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(5),
+        // 3. 顶部 Tab 栏
+        SecondaryScrollableTabRow(
+            selectedTabIndex = selectedTabIndex,
+//            containerColor = MaterialTheme.colorScheme.primaryContainer,
             modifier = Modifier
                 .fillMaxWidth()
-                ,
-            contentPadding = PaddingValues(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+                .height(42.dp),
+            scrollState = tabScrollState,
+            indicator = {},
+            divider = {},
+            minTabWidth = 4.dp  // 最小 Tab 宽度
         ) {
-            items(AppIcons.allIcons) { iconItem ->
-
-                Column(
-                    modifier = Modifier
-                        // 添加内边距，让边框和图标之间有间隙
-                        .padding(4.dp)
-                        // 根据 isSelected 状态动态设置边框
-                        .border(
-                            width = if (iconInt == iconItem.resInt) 1.dp else 0.dp,
-                            color = if (iconInt == iconItem.resInt) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            shape = RoundedCornerShape(8.dp) // 可选：添加圆角
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = {
+                        Text(
+                            text = title,
+                            fontSize = 14.sp,
+                            fontWeight = if (selectedTabIndex == index) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (selectedTabIndex == index) GradientStart else Color(
+                                0xFF6B7280
+                            )
                         )
-                        // 添加点击事件
-                        .clickable {
-                            onSelectIcon(iconItem.resInt)
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(iconItem.resInt),
-                        modifier = Modifier
-                            .size(36.dp),
-                        contentDescription = null,
-                        tint = null, // 影响默认颜色
-                    )
-                    Text(iconItem.name, style = MaterialTheme.typography.labelSmall)
-                }
+                    },
+                    selectedContentColor = GradientStart,
+                    unselectedContentColor = Color(0xFF6B7280),
+                )
             }
         }
+        HorizontalDivider()
+        // 4. 根据索引切换下方的页面内容
+        when (selectedTabIndex) {
+            0 -> IconContent(iconInt,onSelectIcon, AppIcons.allIcons)
+            1 -> IconContent(iconInt,onSelectIcon, AppIcons.digitalIcons)
+            2 -> IconContent(iconInt,onSelectIcon, AppIcons.beautyProductsIcons)
+            3 -> IconContent(iconInt,onSelectIcon, AppIcons.homeAppliances)
+            4 -> IconContent(iconInt,onSelectIcon, AppIcons.outdoorSports)
+            5 -> IconContent(iconInt,onSelectIcon, AppIcons.toolIcons)
+            6 -> IconContent(iconInt,onSelectIcon, AppIcons.instrumentIcons)
+            7 -> IconContent(iconInt,onSelectIcon, AppIcons.furnitureIcons)
+            8 -> IconContent(iconInt,onSelectIcon, AppIcons.otherIcons)
+        }
+
+//        Text(
+//            "选择图标",
+//            style = MaterialTheme.typography.titleLarge,
+//            modifier = Modifier.fillMaxWidth(),
+//            textAlign = TextAlign.Center
+//        )
+
+
 
         Button(
             onClick = {
@@ -713,6 +733,51 @@ private fun CategoryIconsSheet(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("确认")
+        }
+    }
+}
+
+@Composable
+private fun IconContent(
+    iconInt: Int?,
+    onSelectIcon: (Int) -> Unit,
+    categoryIcons:List<AppIcons.IconItem>
+){
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(5),
+        modifier = Modifier
+            .fillMaxWidth()
+        ,
+        contentPadding = PaddingValues(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items(categoryIcons) { iconItem ->
+            Column(
+                modifier = Modifier
+                    // 添加内边距，让边框和图标之间有间隙
+                    .padding(4.dp)
+                    // 根据 isSelected 状态动态设置边框
+                    .border(
+                        width = if (iconInt == iconItem.resInt) 1.dp else 0.dp,
+                        color = if (iconInt == iconItem.resInt) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        shape = RoundedCornerShape(8.dp) // 可选：添加圆角
+                    )
+                    // 添加点击事件
+                    .clickable {
+                        onSelectIcon(iconItem.resInt)
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    painter = painterResource(iconItem.resInt),
+                    modifier = Modifier
+                        .size(36.dp),
+                    contentDescription = null,
+                    tint = null, // 影响默认颜色
+                )
+                Text(iconItem.name, style = MaterialTheme.typography.labelSmall)
+            }
         }
     }
 }

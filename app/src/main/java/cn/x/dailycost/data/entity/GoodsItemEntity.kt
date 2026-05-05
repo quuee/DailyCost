@@ -18,7 +18,7 @@ data class GoodsItemEntity(
     // 购买价格
     val price: Double,
 
-    // 分类id
+    // 分类id, 0 代表全部或无分类
     val cid: Long = 0L,
 
     // 系统图标icon
@@ -26,6 +26,9 @@ data class GoodsItemEntity(
 
     // 购入日期
     val buyDate: Long = System.currentTimeMillis(),
+
+    // 卖了回血
+    val recoverHealthMoney: Double? = 0.0,
 
     // 退役日期(可选)
     val endDate: Long = System.currentTimeMillis(),
@@ -36,6 +39,6 @@ data class GoodsItemEntity(
     // 真实图片(可选)
     val realPictureUri: String? = "",
 
-    //
+    // 创建时间
     val createDate: Long = System.currentTimeMillis()
 )
