@@ -159,6 +159,7 @@ fun MyScreen(
                     .fillMaxWidth()
                     .padding(8.dp)
                     .clickable {
+                        navController.navigate(Routes.Demo.route)
                     },
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {

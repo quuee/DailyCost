@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import cn.x.dailycost.data.entity.GoodsItemEntity
+import cn.x.dailycost.ui.screen.DemoScreen
 import cn.x.dailycost.ui.screen.goods.GoodsScreen
 import cn.x.dailycost.ui.screen.main.MainScreen
 import cn.x.dailycost.ui.screen.my.CategoryManagerScreen
@@ -48,6 +49,12 @@ fun AppNavHost() {
             route = Routes.DataSync.route
         ) {
             DataSyncScreen()
+        }
+
+        composable(
+            route = Routes.Demo.route
+        ) {
+            DemoScreen()
         }
 
     }

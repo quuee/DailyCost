@@ -92,6 +92,10 @@ import cn.x.dailycost.ui.screen.my.SendContent
 import cn.x.dailycost.ui.theme.GradientStart
 import cn.x.dailycost.util.formatTimestamp
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalField
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,13 +114,11 @@ fun GoodsScreen(
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
     var showCategoryIconsBottomSheet by remember { mutableStateOf(false) }
 
-    var showBuyDateDialog by remember { mutableStateOf(false) }
-    var showEndDateDialog by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(
-        yearRange = 1970..2050, // 可设置年份范围
-        initialSelectedDateMillis = System.currentTimeMillis(),
-        initialDisplayMode = DisplayMode.Picker
-    )
+    var showBuyDateBottomSheet by remember { mutableStateOf(false) }
+    var selectedBuyDate by remember { mutableStateOf(LocalDate.now()) }
+    var showEndDateBottomSheet by remember { mutableStateOf(false) }
+    var selectedEndDate by remember { mutableStateOf(LocalDate.now()) }
+
 
     // 相机card是否展开
     var cameraExpanded by remember { mutableStateOf(true) }
@@ -351,7 +353,7 @@ fun GoodsScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(onClick = { showBuyDateDialog = true })
+                                .clickable(onClick = { showBuyDateBottomSheet = true })
                                 .aspectRatio(2f),// 宽高比
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             shape = MaterialTheme.shapes.medium,
@@ -372,7 +374,7 @@ fun GoodsScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(onClick = { showEndDateDialog = true })
+                                .clickable(onClick = { showEndDateBottomSheet = true })
                                 .aspectRatio(2f),// 宽高比
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             shape = MaterialTheme.shapes.medium,
@@ -528,48 +530,87 @@ fun GoodsScreen(
             )
         }
 
-        // 日期选择
-        if (showBuyDateDialog || showEndDateDialog) {
-            DatePickerDialog(
-                onDismissRequest = { showBuyDateDialog = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        // datePickerState.selectedDateMillis 获取选择的时间戳
-                        if (showBuyDateDialog) {
-                            val buyDateMillis = datePickerState.selectedDateMillis ?: 0L
-                            mainVM.processIntent(
-                                MainIntent.ChangeGoodsAttr(
-                                    buyDateMillis = buyDateMillis
-                                )
-                            )
-                            showBuyDateDialog = false
-                        }
-                        if (showEndDateDialog) {
-                            val endDateMillis = datePickerState.selectedDateMillis ?: 0L
-                            mainVM.processIntent(
-                                MainIntent.ChangeGoodsAttr(
-                                    endDateMillis = endDateMillis
-                                )
-                            )
-                            showEndDateDialog = false
-                        }
+        // 购入日期选择
+        CustomizableBottomSheet(
+            isVisible = showBuyDateBottomSheet,
+            onDismissRequest = { showBuyDateBottomSheet = false } // 关闭弹窗
+        ) {
 
-                    }) {
-                        Text("确定")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showBuyDateDialog = false
-                        showEndDateDialog = false
-                    }) {
-                        Text("取消")
-                    }
-                }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                DatePicker(state = datePickerState)
+
+                Text(
+                    text = "当前选中日期: ${selectedBuyDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                cn.x.dailycost.ui.components.DatePicker(
+                    initialDate = selectedBuyDate,
+                    minYear = 2000,
+                    maxDate = LocalDate.now(), // 限制最大日期为今天
+                    onDateChanged = { date ->
+                        selectedBuyDate = date
+                        mainVM.processIntent(
+                            MainIntent.ChangeGoodsAttr(
+                                buyDateMillis = selectedBuyDate.atStartOfDay()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+                            )
+                        )
+                    }
+                )
+                TextButton(onClick = { showBuyDateBottomSheet = false }) {
+                    Text("确定")
+                }
             }
         }
+        // 退役日期选择
+        CustomizableBottomSheet(
+            isVisible = showEndDateBottomSheet,
+            onDismissRequest = { showEndDateBottomSheet = false } // 关闭弹窗
+        ) {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    text = "当前选中日期: ${selectedEndDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                cn.x.dailycost.ui.components.DatePicker(
+                    initialDate = selectedEndDate,
+                    minYear = LocalDate.now().year,
+                    maxDate = LocalDate.of(2099,12,31),
+                    onDateChanged = { date ->
+                        selectedEndDate = date
+                        mainVM.processIntent(
+                            MainIntent.ChangeGoodsAttr(
+                                endDateMillis = selectedEndDate.atStartOfDay()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+                            )
+                        )
+                    }
+                )
+                TextButton(onClick = { showEndDateBottomSheet = false }) {
+                    Text("确定")
+                }
+            }
+        }
+
     }
 }
 
@@ -726,14 +767,6 @@ private fun CategoryIconsSheet(
             7 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
             8 -> IconContent(iconInt, onSelectIcon, AppIcons.otherIcons)
         }
-
-//        Text(
-//            "选择图标",
-//            style = MaterialTheme.typography.titleLarge,
-//            modifier = Modifier.fillMaxWidth(),
-//            textAlign = TextAlign.Center
-//        )
-
 
         Button(
             onClick = {

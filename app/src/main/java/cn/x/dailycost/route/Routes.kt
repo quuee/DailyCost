@@ -14,4 +14,6 @@ sealed class Routes(val route: String)  {
     data object DataSync : Routes("dataSync")
 
     data object CategoryManager : Routes("categoryManager")
+
+    data object Demo : Routes("demo")
 }
