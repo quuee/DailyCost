@@ -31,7 +31,10 @@ data class GoodsItemEntity(
     val recoverHealthMoney: Double? = 0.0,
 
     // 退役日期(可选)
-    val endDate: Long = 0L,
+    val retireDate: Long = 0L,
+
+    // 0 未退役 ; 1 已退役
+//    val retireState: Int = 0,
 
     // 备注(可选)
     val remark: String?,

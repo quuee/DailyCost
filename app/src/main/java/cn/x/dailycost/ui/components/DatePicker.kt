@@ -27,7 +27,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 
-
 @Composable
 private fun WheelPicker(
     modifier: Modifier = Modifier,
@@ -35,9 +34,9 @@ private fun WheelPicker(
     initialIndex: Int = 0,
     itemHeight: Dp = 40.dp,
     visibleItemsCount: Int = 5,
-    textStyle: TextStyle = LocalTextStyle.current,
-    selectedTextColor: Color = LocalContentColor.current,
-    unselectedTextColor: Color = LocalContentColor.current.copy(alpha = 0.6f),
+
+    selectedTextColor: Color = MaterialTheme.colorScheme.onBackground,
+    unselectedTextColor: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
     showDividers: Boolean = true,
     dividerColor: Color = Color.LightGray,
     onValueChange: (Int) -> Unit
@@ -77,27 +76,29 @@ private fun WheelPicker(
                         )
                     )
                 }
-                // 添加上下渐变遮罩，实现滚轮立体感
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black),
-                        startY = 0f,
-                        endY = itemHeight.toPx() * middleItemIndex
-                    ),
-                    blendMode = BlendMode.DstIn
-                )
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(Color.Black, Color.Transparent),
-                        startY = itemHeight.toPx() * (middleItemIndex + 1),
-                        endY = itemHeight.toPx() * visibleItemsCount
-                    ),
-                    blendMode = BlendMode.DstIn
-                )
+                // 添加上下渐变遮罩，实现滚轮立体感, 这里有问题,背景会变透明了
+//                drawRect(
+//                    brush = Brush.verticalGradient(
+//                        colors = listOf(Color.Transparent, Color.Black),
+//                        startY = 0f,
+//                        endY = itemHeight.toPx() * middleItemIndex
+//                    ),
+//                    blendMode = BlendMode.DstIn
+//                )
+//                drawRect(
+//                    brush = Brush.verticalGradient(
+//                        colors = listOf(Color.Black, Color.Transparent),
+//                        startY = itemHeight.toPx() * (middleItemIndex + 1),
+//                        endY = itemHeight.toPx() * visibleItemsCount
+//                    ),
+//                    blendMode = BlendMode.DstIn
+//                )
             }
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().align(Alignment.Center),
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center),
             state = lazyListState,
             contentPadding = PaddingValues(vertical = itemHeight * middleItemIndex),
             flingBehavior = rememberSnapFlingBehavior(lazyListState = lazyListState),
@@ -107,13 +108,13 @@ private fun WheelPicker(
                 val isSelected = index == lazyListState.firstVisibleItemIndex
                 Text(
                     text = items[index],
-                    style = textStyle,
+                    style = if(isSelected)  MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium,
                     color = if (isSelected) selectedTextColor else unselectedTextColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .height(itemHeight)
-                        .padding(vertical = 4.dp)
+                        .padding(vertical = 8.dp)
                         .wrapContentWidth()
                 )
             }
@@ -227,7 +228,9 @@ fun DPPP() {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(

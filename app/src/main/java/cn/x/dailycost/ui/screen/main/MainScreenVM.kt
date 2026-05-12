@@ -70,7 +70,7 @@ sealed class MainIntent : MviIntent {
         val cid: Long? = null,
         val iconInt: Int? = null,
         val buyDateMillis: Long? = null,
-        val endDateMillis: Long? = null,
+        val retireDateMillis: Long? = null,
         val photoUri: String? = null,
         val remark: String? = null,
     ) :
@@ -173,7 +173,7 @@ class MainScreenVM(
                 intent.cid,
                 intent.iconInt,
                 intent.buyDateMillis,
-                intent.endDateMillis,
+                intent.retireDateMillis,
                 intent.photoUri,
                 intent.remark,
             )
@@ -223,7 +223,7 @@ class MainScreenVM(
         cid: Long?,
         iconInt: Int?,
         buyDateMillis: Long?,
-        endDateMillis: Long?,
+        retireDateMillis: Long?,
         photoUri: String?,
         remark: String?,
     ) {
@@ -262,10 +262,10 @@ class MainScreenVM(
                 )
             }
         }
-        endDateMillis?.let {
+        retireDateMillis?.let {
             setState {
                 copy(
-                    goodsFormData = goodsFormData.copy(endDate = endDateMillis)
+                    goodsFormData = goodsFormData.copy(retireDate = retireDateMillis)
                 )
             }
         }

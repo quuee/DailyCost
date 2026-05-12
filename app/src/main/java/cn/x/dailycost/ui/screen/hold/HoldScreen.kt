@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,6 +43,7 @@ import cn.x.dailycost.ui.components.SortDropdownButton
 import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
 import cn.x.dailycost.util.getDaysDifference
+import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.temporal.ChronoUnit
 
@@ -189,6 +192,7 @@ private fun AssetCard(
 private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
     val usedDays = getDaysDifference(goodsItem.buyDate)
     val everyDayMoney = "%.2f".format(goodsItem.price / usedDays)
+
     Card(
         modifier = Modifier
             .padding(4.dp)
@@ -205,7 +209,11 @@ private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
                     contentDescription = null
                 )
             }else{
-
+                AsyncImage(
+                    model = goodsItem.realPictureUri,
+                    modifier = Modifier.size(36.dp),
+                    contentDescription = null,
+                )
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -221,8 +229,8 @@ private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
                 horizontalAlignment = Alignment.End
             ) {
                 Text("${usedDays} 天", style = MaterialTheme.typography.titleLarge)
-                if (goodsItem.endDate > goodsItem.buyDate) {
-                    val days = getDaysDifference(goodsItem.buyDate,goodsItem.endDate)
+                if (goodsItem.retireDate > goodsItem.buyDate) {
+                    val days = getDaysDifference(goodsItem.buyDate,goodsItem.retireDate)
                     Text("${days} 天后退役", style = MaterialTheme.typography.bodySmall)
                 }
             }

@@ -116,8 +116,8 @@ fun GoodsScreen(
 
     var showBuyDateBottomSheet by remember { mutableStateOf(false) }
     var selectedBuyDate by remember { mutableStateOf(LocalDate.now()) }
-    var showEndDateBottomSheet by remember { mutableStateOf(false) }
-    var selectedEndDate by remember { mutableStateOf(LocalDate.now()) }
+    var showRetireDateBottomSheet by remember { mutableStateOf(false) }
+    var selectedRetireDate by remember { mutableStateOf(LocalDate.now()) }
 
 
     // 相机card是否展开
@@ -191,7 +191,7 @@ fun GoodsScreen(
                                     cid = goods.cid,
                                     iconInt = goods.iconInt,
                                     buyDate = goods.buyDate,
-                                    endDate = goods.endDate,
+                                    retireDate = goods.retireDate,
                                     remark = goods.remark,
                                     realPictureUri = goods.realPictureUri,
                                 )
@@ -208,7 +208,7 @@ fun GoodsScreen(
                                     cid = goods.cid,
                                     iconInt = goods.iconInt,
                                     buyDate = goods.buyDate,
-                                    endDate = goods.endDate,
+                                    retireDate = goods.retireDate,
                                     remark = goods.remark,
                                     realPictureUri = goods.realPictureUri,
                                 )
@@ -374,7 +374,7 @@ fun GoodsScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(onClick = { showEndDateBottomSheet = true })
+                                .clickable(onClick = { showRetireDateBottomSheet = true })
                                 .aspectRatio(2f),// 宽高比
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             shape = MaterialTheme.shapes.medium,
@@ -386,7 +386,7 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             Text(
-                                text = if (goods.endDate > 0L) formatTimestamp(goods.endDate) else "",
+                                text = if (goods.retireDate > 0L) formatTimestamp(goods.retireDate) else "",
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -572,8 +572,8 @@ fun GoodsScreen(
         }
         // 退役日期选择
         CustomizableBottomSheet(
-            isVisible = showEndDateBottomSheet,
-            onDismissRequest = { showEndDateBottomSheet = false } // 关闭弹窗
+            isVisible = showRetireDateBottomSheet,
+            onDismissRequest = { showRetireDateBottomSheet = false } // 关闭弹窗
         ) {
 
             Column(
@@ -584,20 +584,20 @@ fun GoodsScreen(
             ) {
 
                 Text(
-                    text = "当前选中日期: ${selectedEndDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}",
+                    text = "当前选中日期: ${selectedRetireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 cn.x.dailycost.ui.components.DatePicker(
-                    initialDate = selectedEndDate,
+                    initialDate = selectedRetireDate,
                     minYear = LocalDate.now().year,
                     maxDate = LocalDate.of(2099,12,31),
                     onDateChanged = { date ->
-                        selectedEndDate = date
+                        selectedRetireDate = date
                         mainVM.processIntent(
                             MainIntent.ChangeGoodsAttr(
-                                endDateMillis = selectedEndDate.atStartOfDay()
+                                retireDateMillis = selectedRetireDate.atStartOfDay()
                                     .atZone(ZoneId.systemDefault())
                                     .toInstant()
                                     .toEpochMilli()
@@ -605,7 +605,7 @@ fun GoodsScreen(
                         )
                     }
                 )
-                TextButton(onClick = { showEndDateBottomSheet = false }) {
+                TextButton(onClick = { showRetireDateBottomSheet = false }) {
                     Text("确定")
                 }
             }
