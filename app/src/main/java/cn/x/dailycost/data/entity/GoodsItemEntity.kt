@@ -1,7 +1,11 @@
 package cn.x.dailycost.data.entity
 
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import cn.x.dailycost.R
 
@@ -43,5 +47,8 @@ data class GoodsItemEntity(
     val realPictureUri: String?,
 
     // 创建时间
-    val createDate: Long = System.currentTimeMillis()
+    val createDate: Long = System.currentTimeMillis(),
+
+//    @Ignore
+//    val bgColor: Int = Color(0XFFF8F1E4).toArgb(),
 )

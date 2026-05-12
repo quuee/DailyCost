@@ -2,6 +2,7 @@ package cn.x.dailycost.ui.screen.hold
 
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -106,13 +109,17 @@ fun HoldScreen(
                         MainIntent.SearchGoods(
                             searchText,
                             selectedCategory?.cid,
-                            null,null
+                            null, null
                         )
                     )
                 })
         }
         items(state.goodsItems) { goods ->
-            GoodsItem(goods, onToggle = { navController.navigate(Routes.Goods.route + "/${it}") })
+
+            GoodsItem(
+                goods,
+                bgColor = state.categoryMap[goods.cid]?.color ?: Color(0XFFF8F1E4).toArgb(),
+                onToggle = { navController.navigate(Routes.Goods.route + "/${it}") })
         }
     }
 }
@@ -215,7 +222,11 @@ private fun AssetCard(
 
 
 @Composable
-private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
+private fun GoodsItem(
+    goodsItem: GoodsItemEntity,
+    bgColor: Int,
+    onToggle: (Long) -> Unit
+) {
     val usedDays = getDaysDifference(goodsItem.buyDate)
     val everyDayMoney = "%.2f".format(goodsItem.price / usedDays)
 
@@ -225,7 +236,10 @@ private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
             .clickable(onClick = { onToggle(goodsItem.gid) })
     ) {
         Row(
-            modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+            modifier = Modifier
+                .background(color = Color(bgColor))
+                .padding(vertical = 12.dp, horizontal = 8.dp)
+                ,
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (goodsItem.realPictureUri.isNullOrBlank()) {

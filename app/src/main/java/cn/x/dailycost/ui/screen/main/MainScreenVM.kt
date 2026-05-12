@@ -50,9 +50,10 @@ data class MainState(
     val goodsItems: List<GoodsItemEntity> = emptyList(),
     // 查询获得分类集合
     val categories: List<CategoryEntity> = emptyList(),
+    val categoryMap: Map<Long, CategoryEntity> = emptyMap(),
 
     // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
-    val sortFiledList: List<String> = listOf("创建时间","购入时间", "退役时间", "价格"),
+    val sortFiledList: List<String> = listOf("创建时间", "购入时间", "退役时间", "价格"),
     val selectSortField: String = "创建时间",
 
     // 0 升序; 1 降序
@@ -110,6 +111,31 @@ class MainScreenVM(
         MutableSharedFlow<SearchGoodsParams>(extraBufferCapacity = 1)
 
     init {
+        viewModelScope.launch {
+            categoryDao.getAllCategories().collect { items ->
+                setState {
+                    copy(
+                        categories = listOf(
+                            CategoryEntity(
+                                cid = 0L,
+                                name = "全部分类",
+                                color = Color(0XFFF8F1E4).toArgb(),
+                                sort = 1
+                            )
+                        ) + items,
+                        categoryMap = (listOf(
+                            CategoryEntity(
+                                cid = 0L,
+                                name = "全部分类",
+                                color = Color(0XFFF8F1E4).toArgb(),
+                                sort = 1
+                            )
+                        ) + items).associateBy { it.cid }
+                    )
+                }
+            }
+        }
+
         // 监听搜索触发，并自动收集最新的查询结果
         viewModelScope.launch {
             searchGoodsTriggerFlow
@@ -138,23 +164,6 @@ class MainScreenVM(
                         )
                     }
                 }
-        }
-
-        viewModelScope.launch {
-            categoryDao.getAllCategories().collect { items ->
-                setState {
-                    copy(
-                        categories = listOf(
-                            CategoryEntity(
-                                cid = 0L,
-                                name = "全部分类",
-                                color = Color.Transparent.toArgb(),
-                                sort = 1
-                            )
-                        ) + items
-                    )
-                }
-            }
         }
 
         viewModelScope.launch {
@@ -356,7 +365,7 @@ class MainScreenVM(
         val safeSortOrder = if (sortOrder == 0) "ASC" else "DESC"
 
         // 白名单二次校验，绝对保证 SQL 安全
-        val validDbFields = listOf("createDate", "buyDate", "retireDate", "price",)
+        val validDbFields = listOf("createDate", "buyDate", "retireDate", "price")
         val finalSortField = if (dbSortField in validDbFields) dbSortField else "createDate"
 
         sqlBuilder.append(" ORDER BY $finalSortField $safeSortOrder")

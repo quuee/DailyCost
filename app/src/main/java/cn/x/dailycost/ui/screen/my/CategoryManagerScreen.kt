@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -135,10 +139,19 @@ private fun CreateCategorySheet(
 
     // 1. 定义数据源和状态变量
     val colors = listOf(
-        Color.Red.copy(alpha = 0.6f),
-        Color.Blue.copy(alpha = 0.6f),
-        Color.Yellow.copy(alpha = 0.6f),
-        Color.Green.copy(alpha = 0.6f)
+        Color(0XFFF8F1E4).copy(alpha = 0.9f),
+        Color(0XFFA6D3F2).copy(alpha = 0.9f),
+        Color(0XFFF7D78C).copy(alpha = 0.9f),
+        Color(0XFFAFC3A8).copy(alpha = 0.9f),
+        Color(0XFFF4A124).copy(alpha = 0.9f),
+        Color(0XFFF79F77).copy(alpha = 0.9f),
+        Color(0XFFF3D9FF).copy(alpha = 0.9f),
+        Color(0XFFD1E7FE).copy(alpha = 0.9f),
+        Color(0XFFC4D0BF).copy(alpha = 0.9f),
+        Color(0XFFBAF1E3).copy(alpha = 0.9f),
+        Color(0XFFFFE9CE).copy(alpha = 0.9f),
+        Color(0XFFFF92A4).copy(alpha = 0.9f),
+
     )
     // 记录当前选中的颜色，初始值可以设为 null 或列表中的第一个
     var selectedColor by remember { mutableStateOf<Color?>(null) }
@@ -179,9 +192,13 @@ private fun CreateCategorySheet(
             HorizontalDivider(Modifier.padding(4.dp))
             Text("分类颜色")
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(5),
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(colors) { color ->
                     // 判断当前项是否被选中
