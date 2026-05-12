@@ -272,9 +272,3 @@ private fun BottomNavButton(icon: ImageVector, isSelected: Boolean, onClick: () 
     }
 }
 
-@Preview
-@Composable
-fun MPPP() {
-
-    MainScreen(rememberNavController())
-}

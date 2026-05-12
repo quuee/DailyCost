@@ -27,7 +27,9 @@ import androidx.compose.ui.window.PopupProperties
 fun SortDropdownButton(
     selectedOption: String,
     options: List<String>,
-    onOptionSelected: (String) -> Unit = {}
+    onOptionSelected: (String) -> Unit = {},
+    selectOrderOption: Int = 1,
+    onOrderSelected: (Int) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var buttonHeightPx by remember { mutableStateOf(0) }
@@ -62,10 +64,12 @@ fun SortDropdownButton(
             DropdownMenuPopup(
                 options = options,
                 selectedOption = selectedOption,
-                onOptionClick = { option ->
+                onOptionSelected = { option ->
                     onOptionSelected(option)
                     expanded = false
                 },
+                selectOrderOption = selectOrderOption,
+                onOrderSelected = { onOrderSelected(it) },
                 onDismiss = { expanded = false },
                 buttonWidthPx = buttonWidthPx,
                 buttonHeightPx = buttonHeightPx
@@ -78,9 +82,9 @@ fun SortDropdownButton(
 fun DropdownMenuPopup(
     options: List<String>,
     selectedOption: String,
-//    orderOption: List<String>,
-//    selectOrderOption: String,
-    onOptionClick: (String) -> Unit,
+    onOptionSelected: (String) -> Unit,
+    selectOrderOption: Int,
+    onOrderSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
     buttonWidthPx: Int,
     buttonHeightPx: Int
@@ -149,7 +153,7 @@ fun DropdownMenuPopup(
                                         MaterialTheme.colorScheme.onSurface
                                 )
                             },
-                            onClick = { onOptionClick(option) },
+                            onClick = { onOptionSelected(option) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
@@ -184,9 +188,17 @@ fun DropdownMenuPopup(
                                 style = MaterialTheme.typography.labelMedium
                             )
                         },
-                        onClick = { },
+                        onClick = { onOrderSelected(1) },
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
+                        trailingIcon = {
+                            if (1 == selectOrderOption) {
+                                Icon(
+                                    imageVector = Icons.Default.Done,
+                                    contentDescription = null
+                                )
+                            }
+                        }
 
                     )
                     DropdownMenuItem(
@@ -196,9 +208,17 @@ fun DropdownMenuPopup(
                                 style = MaterialTheme.typography.labelMedium
                             )
                         },
-                        onClick = { },
+                        onClick = { onOrderSelected(0) },
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
+                        trailingIcon = {
+                            if (0 == selectOrderOption) {
+                                Icon(
+                                    imageVector = Icons.Default.Done,
+                                    contentDescription = null
+                                )
+                            }
+                        }
 
                     )
                 }

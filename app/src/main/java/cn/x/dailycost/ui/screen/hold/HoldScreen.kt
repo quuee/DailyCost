@@ -72,10 +72,30 @@ fun HoldScreen(
             AssetCard(
                 selectedField = state.selectSortField,
                 options = state.sortFiledList,
-                onOptionSelected = { state.selectSortField = it },
+                onOptionSelected = {
+                    mainVM.processIntent(
+                        MainIntent.SearchGoods(
+                            name = null,
+                            cid = null,
+                            sortField = it,
+                            sortOrder = null
+                        )
+                    )
+                },
                 asset = state.asset,
                 totalCount = state.goodsItems.size,
-                everyDayCostTotal
+                everyDayCostTotal = everyDayCostTotal,
+                selectOrderOption = state.selectSortOrder,
+                onOrderSelected = {
+                    mainVM.processIntent(
+                        MainIntent.SearchGoods(
+                            name = null,
+                            cid = null,
+                            sortField = null,
+                            sortOrder = it
+                        )
+                    )
+                },
             )
         }
         stickyHeader {
@@ -86,8 +106,7 @@ fun HoldScreen(
                         MainIntent.SearchGoods(
                             searchText,
                             selectedCategory?.cid,
-                            null,
-                            null
+                            null,null
                         )
                     )
                 })
@@ -103,6 +122,8 @@ private fun AssetCard(
     selectedField: String,
     options: List<String>,
     onOptionSelected: (String) -> Unit = {},
+    selectOrderOption: Int,
+    onOrderSelected: (Int) -> Unit,
     asset: Double,
     totalCount: Int,
     everyDayCostTotal: Double
@@ -136,6 +157,8 @@ private fun AssetCard(
                     selectedOption = selectedField,
                     options = options,
                     onOptionSelected = { onOptionSelected(it) },
+                    selectOrderOption = selectOrderOption,
+                    onOrderSelected = { onOrderSelected(it) }
                 )
 
             }
@@ -166,7 +189,10 @@ private fun AssetCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column() {
-                    Text("¥ ${"%.2f".format(everyDayCostTotal)}", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "¥ ${"%.2f".format(everyDayCostTotal)}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                     Text("日均成本", style = MaterialTheme.typography.bodyMedium)
                 }
 
@@ -202,13 +228,13 @@ private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
             modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if(goodsItem.realPictureUri.isNullOrBlank()){
+            if (goodsItem.realPictureUri.isNullOrBlank()) {
                 Image(
                     painter = painterResource(goodsItem.iconInt),
                     modifier = Modifier.size(36.dp),
                     contentDescription = null
                 )
-            }else{
+            } else {
                 AsyncImage(
                     model = goodsItem.realPictureUri,
                     modifier = Modifier.size(36.dp),
@@ -230,7 +256,7 @@ private fun GoodsItem(goodsItem: GoodsItemEntity, onToggle: (Long) -> Unit) {
             ) {
                 Text("${usedDays} 天", style = MaterialTheme.typography.titleLarge)
                 if (goodsItem.retireDate > goodsItem.buyDate) {
-                    val days = getDaysDifference(goodsItem.buyDate,goodsItem.retireDate)
+                    val days = getDaysDifference(goodsItem.buyDate, goodsItem.retireDate)
                     Text("${days} 天后退役", style = MaterialTheme.typography.bodySmall)
                 }
             }

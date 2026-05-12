@@ -34,7 +34,9 @@ data class MainState(
     override val isLoading: Boolean = false,
     override val error: String? = null,
 
+    // 总资产
     val asset: Double = 0.0,
+    // 用于编辑或新增页面的物品信息 默认参数
     val goodsFormData: GoodsItemEntity = GoodsItemEntity(
         gid = 0L,
         goodsName = "",
@@ -44,16 +46,17 @@ data class MainState(
         remark = "",
         realPictureUri = ""
     ),
+    // 查询获得物品集合
     val goodsItems: List<GoodsItemEntity> = emptyList(),
+    // 查询获得分类集合
     val categories: List<CategoryEntity> = emptyList(),
 
     // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
-    val sortFiledList: List<String> = listOf("创建时间", "过期时间", "预计退役时间", "库存"),
-    var selectSortField: String = "创建时间",
+    val sortFiledList: List<String> = listOf("创建时间","购入时间", "退役时间", "价格"),
+    val selectSortField: String = "创建时间",
 
     // 0 升序; 1 降序
-    val sortOrderList: List<Int> = listOf(0, 1),
-    var selectSortOrder: Int = 1
+    val selectSortOrder: Int = 1
 
 ) : MviState
 
@@ -82,7 +85,7 @@ sealed class MainIntent : MviIntent {
         val name: String?,
         val cid: Long?,
         val sortField: String?,
-        val sortOrder: Int? // 传入 "ASC" 或 "DESC"
+        val sortOrder: Int?
     ) : MainIntent()
 
     data class CreateCategory(val category: CategoryEntity) : MainIntent()
@@ -181,9 +184,32 @@ class MainScreenVM(
             is MainIntent.GetGoodsById -> getGoodsById(intent.gid)
             is MainIntent.SearchGoods -> {
                 // 触发搜索（进入 Flow 管道）
-                setState { copy(isLoading = true) }
+                setState {
+                    copy(
+                        isLoading = true,
+                    )
+                }
+                intent.sortField?.let {
+                    setState {
+                        copy(
+                            selectSortField = intent.sortField
+                        )
+                    }
+                }
+                intent.sortOrder?.let {
+                    setState {
+                        copy(
+                            selectSortOrder = intent.sortOrder
+                        )
+                    }
+                }
                 searchGoodsTriggerFlow.emit(
-                    SearchGoodsParams(intent.name, intent.cid, intent.sortField, intent.sortOrder)
+                    SearchGoodsParams(
+                        intent.name,
+                        intent.cid,
+                        state.value.selectSortField,
+                        state.value.selectSortOrder
+                    )
                 )
             }
 
@@ -198,10 +224,9 @@ class MainScreenVM(
     private fun mapSortFieldToDb(uiField: String?): String {
         return when (uiField) {
             "创建时间" -> "createDate"
-            "过期时间" -> "buyDate" // 假设你的 buyDate 代表过期/购入时间
-            "预计退役时间" -> "endDate"
-            "库存" -> "price" // 假设你用 price 字段暂代库存，如有真实库存字段请替换
-            "物品名称" -> "goodsName"
+            "购入时间" -> "buyDate"
+            "退役时间" -> "retireDate"
+            "价格" -> "price"
             else -> "createDate" // 默认排序字段
         }
     }
@@ -296,7 +321,7 @@ class MainScreenVM(
         // SPUtil
         setState { copy(isLoading = true) }
         searchGoodsTriggerFlow.emit(
-            SearchGoodsParams("", 0L, "createDate", 1)
+            SearchGoodsParams("", 0L, state.value.selectSortField, state.value.selectSortOrder)
         )
     }
 
@@ -331,7 +356,7 @@ class MainScreenVM(
         val safeSortOrder = if (sortOrder == 0) "ASC" else "DESC"
 
         // 白名单二次校验，绝对保证 SQL 安全
-        val validDbFields = listOf("createDate", "buyDate", "endDate", "price", "goodsName")
+        val validDbFields = listOf("createDate", "buyDate", "retireDate", "price",)
         val finalSortField = if (dbSortField in validDbFields) dbSortField else "createDate"
 
         sqlBuilder.append(" ORDER BY $finalSortField $safeSortOrder")
