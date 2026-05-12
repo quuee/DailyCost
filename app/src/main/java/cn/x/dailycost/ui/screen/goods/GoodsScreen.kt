@@ -655,15 +655,14 @@ private fun CategorySheet(
             items(categories) { category ->
                 Surface(
                     modifier = Modifier
+//                        .background(color = Color(category.color))
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {
                             selectedCategory = category
                             onSelect(selectedCategory)
                         },
-                    color = if (category == selectedCategory)
-                        MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceVariant
+                    color = Color(category.color)
                 ) {
                     Text(
                         text = category.name,
