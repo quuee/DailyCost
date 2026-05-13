@@ -111,11 +111,14 @@ fun GoodsScreen(
 
     val context = LocalContext.current
 
+    //分类
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
     var showCategoryIconsBottomSheet by remember { mutableStateOf(false) }
 
+    // 购入日期
     var showBuyDateBottomSheet by remember { mutableStateOf(false) }
     var selectedBuyDate by remember { mutableStateOf(LocalDate.now()) }
+    // 退役日期
     var showRetireDateBottomSheet by remember { mutableStateOf(false) }
     var selectedRetireDate by remember { mutableStateOf(LocalDate.now()) }
 
@@ -258,7 +261,6 @@ fun GoodsScreen(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(8.dp),
                         ),
-
                     )
             }
 
@@ -290,7 +292,7 @@ fun GoodsScreen(
                             HorizontalDivider()
                             if (goods.cid > 0L) {
                                 val result = state.categories.find { it.cid == goods.cid }
-                                Text(result?.name ?: "全部分类")
+                                Text(result?.name ?: "全部分类", modifier = Modifier.padding(8.dp))
                             }
 
                         }
@@ -314,6 +316,7 @@ fun GoodsScreen(
                                 Icon(
                                     painter = painterResource(goods.iconInt),
                                     modifier = Modifier
+                                        .padding(horizontal = 8.dp)
                                         .size(36.dp),
                                     contentDescription = null,
                                     tint = null, // 影响默认颜色
@@ -719,7 +722,7 @@ private fun CategoryIconsSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = (LocalConfiguration.current.screenHeightDp / 4 * 3).dp)
+            .height((LocalConfiguration.current.screenHeightDp / 4 * 3).dp)
             .padding(4.dp)
     ) {
         // 3. 顶部 Tab 栏
