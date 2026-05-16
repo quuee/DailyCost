@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -45,9 +48,12 @@ import cn.x.dailycost.ui.components.SearchBar
 import cn.x.dailycost.ui.components.SortDropdownButton
 import cn.x.dailycost.ui.screen.main.MainIntent
 import cn.x.dailycost.ui.screen.main.MainScreenVM
+import cn.x.dailycost.util.getDate
 import cn.x.dailycost.util.getDaysDifference
 import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 
@@ -58,15 +64,16 @@ fun HoldScreen(
 ) {
     val state by mainVM.state.collectAsState()
 
-    val everyDayCostTotal by remember {
-        derivedStateOf {
-            state.goodsItems.sumOf { goods ->
-                val usedDays = getDaysDifference(goods.buyDate)
-                // 注意处理 usedDays 为 0 的情况，防止除以 0 报错
-                if (usedDays > 0) goods.price / usedDays else 0.0
-            }
-        }
-    }
+//    val everyDayCostTotal by remember {
+//        derivedStateOf {
+//            state.goodsItems.sumOf { goods ->
+//                val nowDate = Instant.now().toEpochMilli()
+//                val usedDays = getDaysDifference(goods.buyDate,nowDate)
+//                // 注意处理 usedDays 为 0 的情况，防止除以 0 报错
+//                if (usedDays > 0) goods.price / usedDays else 0.0
+//            }
+//        }
+//    }
 
     LazyColumn(
 
@@ -87,7 +94,7 @@ fun HoldScreen(
                 },
                 asset = state.asset,
                 totalCount = state.goodsItems.size,
-                everyDayCostTotal = everyDayCostTotal,
+                everyDayCostTotal = state.everyDayCostTotal,
                 selectOrderOption = state.selectSortOrder,
                 onOrderSelected = {
                     mainVM.processIntent(
@@ -208,10 +215,10 @@ private fun AssetCard(
                     Text("物品总数", style = MaterialTheme.typography.bodyMedium)
                 }
 
-                Column() {
-                    Text("0", style = MaterialTheme.typography.bodyMedium)
-                    Text("已退役", style = MaterialTheme.typography.bodyMedium)
-                }
+//                Column() {
+//                    Text("0", style = MaterialTheme.typography.bodyMedium)
+//                    Text("已退役", style = MaterialTheme.typography.bodyMedium)
+//                }
 
             }
 
@@ -227,8 +234,22 @@ private fun GoodsItem(
     bgColor: Int,
     onToggle: (Long) -> Unit
 ) {
-    val usedDays = getDaysDifference(goodsItem.buyDate)
-    val everyDayMoney = "%.2f".format(goodsItem.price / usedDays)
+
+    val nowDate = Instant.now().toEpochMilli()
+    var usedDays by remember { mutableLongStateOf(0L) }
+    var everyDayMoney by remember { mutableStateOf("") }
+    var retireDays by remember { mutableLongStateOf(0L) }
+    if (goodsItem.recoverHealthMoney > 0 && goodsItem.retireDate > 0) {
+        usedDays =
+            getDaysDifference(goodsItem.buyDate, goodsItem.retireDate)
+        everyDayMoney =
+            "%.2f".format((goodsItem.price - goodsItem.recoverHealthMoney) / usedDays)
+
+    } else {
+        usedDays = getDaysDifference(goodsItem.buyDate, nowDate)
+        everyDayMoney = "%.2f".format(goodsItem.price / usedDays)
+        retireDays = getDaysDifference(goodsItem.buyDate, goodsItem.retireDate)
+    }
 
     Card(
         modifier = Modifier
@@ -238,8 +259,7 @@ private fun GoodsItem(
         Row(
             modifier = Modifier
                 .background(color = Color(bgColor))
-                .padding(vertical = 12.dp, horizontal = 8.dp)
-                ,
+                .padding(vertical = 12.dp, horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (goodsItem.realPictureUri.isNullOrBlank()) {
@@ -258,21 +278,42 @@ private fun GoodsItem(
 
             Spacer(modifier = Modifier.width(8.dp))
             Column() {
-                Text(goodsItem.goodsName, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    "¥ ${goodsItem.price}  日均：${everyDayMoney}/天",
-                    style = MaterialTheme.typography.bodySmall
-                )
+                Text(goodsItem.goodsName, style = MaterialTheme.typography.titleLarge)
+                if (goodsItem.recoverHealthMoney > 0) {
+                    Text(
+                        "¥${goodsItem.price} 日均:${everyDayMoney}/天 回血:${goodsItem.recoverHealthMoney} ",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    Text(
+                        "¥${goodsItem.price} 日均：${everyDayMoney}/天  ",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
             }
             Spacer(modifier = Modifier.weight(1f))
             Column(
                 horizontalAlignment = Alignment.End
             ) {
                 Text("${usedDays} 天", style = MaterialTheme.typography.titleLarge)
-                if (goodsItem.retireDate > goodsItem.buyDate) {
-                    val days = getDaysDifference(goodsItem.buyDate, goodsItem.retireDate)
-                    Text("${days} 天后退役", style = MaterialTheme.typography.bodySmall)
+                // 距离退役日期
+                if (goodsItem.retireDate > nowDate) {
+                    if (retireDays > 0) {
+                        Text("${retireDays} 天后退役", style = MaterialTheme.typography.bodySmall)
+                    }
+                } else {
+                    // 已退役
+                    if (goodsItem.retireDate > 0L) {
+                        val date = getDate(goodsItem.retireDate)
+                        Text(
+                            "${date.year}-${date.monthValue}-${date.dayOfMonth}退役",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
                 }
+
             }
         }
     }

@@ -32,13 +32,10 @@ data class GoodsItemEntity(
     val buyDate: Long = System.currentTimeMillis(),
 
     // 卖了回血
-    val recoverHealthMoney: Double? = 0.0,
+    val recoverHealthMoney: Double = 0.0,
 
     // 退役日期(可选)
     val retireDate: Long = 0L,
-
-    // 0 未退役 ; 1 已退役
-//    val retireState: Int = 0,
 
     // 备注(可选)
     val remark: String?,
@@ -51,4 +48,6 @@ data class GoodsItemEntity(
 
 //    @Ignore
 //    val bgColor: Int = Color(0XFFF8F1E4).toArgb(),
+
+
 )

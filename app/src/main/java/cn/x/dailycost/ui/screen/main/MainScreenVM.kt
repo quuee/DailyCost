@@ -16,18 +16,17 @@ import cn.x.dailycost.data.dao.GoodsItemDao
 import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.util.SPUtil
+import cn.x.dailycost.util.getDaysDifference
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 // State - UI 状态
 data class MainState(
@@ -36,6 +35,8 @@ data class MainState(
 
     // 总资产
     val asset: Double = 0.0,
+    // 每日成本总和
+    val everyDayCostTotal: Double = 0.0,
     // 用于编辑或新增页面的物品信息 默认参数
     val goodsFormData: GoodsItemEntity = GoodsItemEntity(
         gid = 0L,
@@ -53,8 +54,8 @@ data class MainState(
     val categoryMap: Map<Long, CategoryEntity> = emptyMap(),
 
     // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
-    val sortFiledList: List<String> = listOf("创建时间", "购入时间", "退役时间", "价格"),
-    val selectSortField: String = "创建时间",
+    val sortFiledList: List<String> = listOf("购入时间", "创建时间", "退役时间", "价格"),
+    val selectSortField: String = "购入时间",
 
     // 0 升序; 1 降序
     val selectSortOrder: Int = 1
@@ -77,6 +78,7 @@ sealed class MainIntent : MviIntent {
         val retireDateMillis: Long? = null,
         val photoUri: String? = null,
         val remark: String? = null,
+        val recoverHealthMoney: Double? = null,
     ) :
         MainIntent()
 
@@ -158,7 +160,30 @@ class MainScreenVM(
                     setState {
                         copy(
                             goodsItems = items,
-                            asset = items.sumOf { it.price },
+                            asset = items.sumOf { goods ->
+                                if (goods.recoverHealthMoney > 0 && goods.retireDate > 0) {
+                                    0.0
+                                } else {
+                                    goods.price
+                                }
+                            },
+                            everyDayCostTotal = items.sumOf { goods ->
+                                // 出二手, 已出二手使用成本计算 (购入价格-回血价格)/(购入日期-出售(退役)日期)
+                                if (goods.recoverHealthMoney > 0 && goods.retireDate > 0) {
+//                                    val usedDays =
+//                                        getDaysDifference(goods.buyDate, goods.retireDate)
+//                                    (goods.price - goods.recoverHealthMoney) / usedDays
+                                    // 不计入当前
+                                    0.0
+                                } else {
+                                    // 持有成本计算 价格/(当前日期-购入日期)
+                                    val nowDate = Instant.now().toEpochMilli()
+                                    val usedDays = getDaysDifference(goods.buyDate, nowDate)
+                                    // 注意处理 usedDays 为 0 的情况，防止除以 0 报错
+                                    if (usedDays > 0) goods.price / usedDays else 0.0
+                                }
+
+                            },
                             isLoading = false,
                             error = null
                         )
@@ -188,6 +213,7 @@ class MainScreenVM(
                 intent.retireDateMillis,
                 intent.photoUri,
                 intent.remark,
+                intent.recoverHealthMoney,
             )
 
             is MainIntent.GetGoodsById -> getGoodsById(intent.gid)
@@ -236,7 +262,7 @@ class MainScreenVM(
             "购入时间" -> "buyDate"
             "退役时间" -> "retireDate"
             "价格" -> "price"
-            else -> "createDate" // 默认排序字段
+            else -> "buyDate" // 默认排序字段
         }
     }
 
@@ -260,7 +286,9 @@ class MainScreenVM(
         retireDateMillis: Long?,
         photoUri: String?,
         remark: String?,
+        recoverHealthMoney: Double?,
     ) {
+        // todo 能合并嘛
         goodsName?.let {
             setState {
                 copy(
@@ -317,10 +345,28 @@ class MainScreenVM(
                 )
             }
         }
+        recoverHealthMoney?.let {
+            setState {
+                copy(
+                    goodsFormData = goodsFormData.copy(recoverHealthMoney = recoverHealthMoney)
+                )
+            }
+        }
     }
 
     private suspend fun createGoods(goodsItem: GoodsItemEntity) {
-        // todo 空校验
+        if (goodsItem.price <= 0) {
+//            sendEffect(MainEffect.ShowMessage("购入价格必填"))
+            return
+        }
+        if (goodsItem.buyDate <= 0) {
+//            sendEffect(MainEffect.ShowMessage("购入时间必填"))
+            return
+        }
+        if (goodsItem.goodsName.isBlank()) {
+//            sendEffect(MainEffect.ShowMessage("名称必填"))
+            return
+        }
         goodsItemDao.insert(goodsItem)
     }
 
@@ -330,7 +376,7 @@ class MainScreenVM(
         // SPUtil
         setState { copy(isLoading = true) }
         searchGoodsTriggerFlow.emit(
-            SearchGoodsParams("", 0L, state.value.selectSortField, state.value.selectSortOrder)
+            SearchGoodsParams(null, 0L, state.value.selectSortField, state.value.selectSortOrder)
         )
     }
 
@@ -365,8 +411,8 @@ class MainScreenVM(
         val safeSortOrder = if (sortOrder == 0) "ASC" else "DESC"
 
         // 白名单二次校验，绝对保证 SQL 安全
-        val validDbFields = listOf("createDate", "buyDate", "retireDate", "price")
-        val finalSortField = if (dbSortField in validDbFields) dbSortField else "createDate"
+        val validDbFields = listOf("buyDate", "createDate", "retireDate", "price")
+        val finalSortField = if (dbSortField in validDbFields) dbSortField else "buyDate"
 
         sqlBuilder.append(" ORDER BY $finalSortField $safeSortOrder")
 

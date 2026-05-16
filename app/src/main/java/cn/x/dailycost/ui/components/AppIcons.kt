@@ -22,7 +22,7 @@ object AppIcons {
     // 2. 定义一个数据类来封装“名字”和“图标”
     data class IconItem(val name: String, val resInt: Int)
 
-    // 3. todo 创建不同分类的列表 再把所有需要遍历的图标加进来
+    // 3. 创建不同分类的列表 再把所有需要遍历的图标加进来
 
     // 电子数码
     val digitalIcons: List<IconItem> = listOf(
@@ -60,6 +60,7 @@ object AppIcons {
         IconItem("游戏机", R.drawable.ic_youxiji),
         IconItem("智能手环", R.drawable.ic_zhinengshouhuan),
         IconItem("转换线", R.drawable.ic_zhuanhuanxian),
+        IconItem("显示器", R.drawable.ic_xianshiqi),
     )
 
     // 护肤美妆

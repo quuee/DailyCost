@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -286,15 +285,6 @@ private fun CategoryItem(
                 onShowEditSheet(category)
             })
         )
-        // 排序改拖动排序
-//        Icon(
-//            imageVector = Icons.Filled.ArrowUpward,
-//            contentDescription = null
-//        )
-//        Icon(
-//            imageVector = Icons.Filled.ArrowDownward,
-//            contentDescription = null
-//        )
         Icon(
             imageVector = Icons.Filled.Delete,
             contentDescription = null,
@@ -304,6 +294,7 @@ private fun CategoryItem(
         )
         Spacer(modifier = Modifier.width(16.dp))
 
+        // 拖动排序
         Icon(
             imageVector = Icons.Filled.Dehaze,
             contentDescription = null

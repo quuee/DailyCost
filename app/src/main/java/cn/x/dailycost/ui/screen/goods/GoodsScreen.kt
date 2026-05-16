@@ -128,6 +128,7 @@ fun GoodsScreen(
 
     // 表单属性
     var price by remember { mutableStateOf(0.0) }
+    var recoverHealthMoney by remember { mutableStateOf(0.0) }
 
 
     // 初始加载
@@ -182,45 +183,49 @@ fun GoodsScreen(
                     }) {
                     Text("Delete")
                 }
-                TextButton(onClick = {
-                    if (state.goodsFormData.gid > 0L) {
-                        // 编辑
-                        mainVM.processIntent(
-                            MainIntent.UpdateGoods(
-                                GoodsItemEntity(
-                                    gid = goods.gid,
-                                    goodsName = goods.goodsName,
-                                    price = goods.price,
-                                    cid = goods.cid,
-                                    iconInt = goods.iconInt,
-                                    buyDate = goods.buyDate,
-                                    retireDate = goods.retireDate,
-                                    remark = goods.remark,
-                                    realPictureUri = goods.realPictureUri,
+                TextButton(
+                    enabled = goods.goodsName.isNotEmpty() && goods.price > 0 && goods.buyDate > 0,
+                    onClick = {
+                        if (state.goodsFormData.gid > 0L) {
+                            // 编辑
+                            mainVM.processIntent(
+                                MainIntent.UpdateGoods(
+                                    GoodsItemEntity(
+                                        gid = goods.gid,
+                                        goodsName = goods.goodsName,
+                                        price = goods.price,
+                                        cid = goods.cid,
+                                        iconInt = goods.iconInt,
+                                        buyDate = goods.buyDate,
+                                        retireDate = goods.retireDate,
+                                        remark = goods.remark,
+                                        realPictureUri = goods.realPictureUri,
+                                        recoverHealthMoney = goods.recoverHealthMoney,
+                                    )
                                 )
                             )
-                        )
-                    } else {
-                        // 新增
-                        mainVM.processIntent(
-                            MainIntent.CreateGoods(
-                                GoodsItemEntity(
-                                    gid = 0L,
-                                    goodsName = goods.goodsName,
-                                    price = goods.price,
-                                    cid = goods.cid,
-                                    iconInt = goods.iconInt,
-                                    buyDate = goods.buyDate,
-                                    retireDate = goods.retireDate,
-                                    remark = goods.remark,
-                                    realPictureUri = goods.realPictureUri,
+                        } else {
+                            // 新增
+                            mainVM.processIntent(
+                                MainIntent.CreateGoods(
+                                    GoodsItemEntity(
+                                        gid = 0L,
+                                        goodsName = goods.goodsName,
+                                        price = goods.price,
+                                        cid = goods.cid,
+                                        iconInt = goods.iconInt,
+                                        buyDate = goods.buyDate,
+                                        retireDate = goods.retireDate,
+                                        remark = goods.remark,
+                                        realPictureUri = goods.realPictureUri,
+                                        recoverHealthMoney = goods.recoverHealthMoney,
+                                    )
                                 )
                             )
-                        )
 
-                    }
-                    navController.popBackStack()
-                }) {
+                        }
+                        navController.popBackStack()
+                    }) {
                     Text("Save")
                 }
             }
@@ -261,7 +266,9 @@ fun GoodsScreen(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(8.dp),
                         ),
-                    )
+                    isError = goods.goodsName.isBlank(),
+//                    supportingText = { if (goods.goodsName.isBlank()) Text("不能为空") }
+                )
             }
 
             // 选择分类 图标 拍照 购入价格 购入日期 退役日期  过保日期
@@ -349,6 +356,7 @@ fun GoodsScreen(
                                         )
                                     )
                                 },
+                                error = goods.price <= 0
                             )
                         }
                     }
@@ -392,6 +400,35 @@ fun GoodsScreen(
                                 text = if (goods.retireDate > 0L) formatTimestamp(goods.retireDate) else "",
                                 modifier = Modifier.padding(8.dp)
                             )
+                        }
+                    }
+                    if (goods.gid > 0L) {
+                        item {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(2f),// 宽高比
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                            ) {
+                                Text(
+                                    text = "回血",
+                                    modifier = Modifier.padding(8.dp)
+                                )
+                                HorizontalDivider()
+                                DecimalInputField(
+                                    value = if (goods.recoverHealthMoney > 0.0) goods.recoverHealthMoney else recoverHealthMoney,
+                                    onValueChange = {
+                                        recoverHealthMoney = it
+                                        mainVM.processIntent(
+                                            MainIntent.ChangeGoodsAttr(
+                                                recoverHealthMoney = recoverHealthMoney,
+                                            )
+                                        )
+                                    },
+                                )
+                            }
                         }
                     }
                 }
@@ -594,8 +631,9 @@ fun GoodsScreen(
 
                 cn.x.dailycost.ui.components.DatePicker(
                     initialDate = selectedRetireDate,
-                    minYear = LocalDate.now().year,
-                    maxDate = LocalDate.of(2099,12,31),
+//                    minYear = LocalDate.now().year,
+                    minYear = 2000,
+                    maxDate = LocalDate.of(2099, 12, 31),
                     onDateChanged = { date ->
                         selectedRetireDate = date
                         mainVM.processIntent(

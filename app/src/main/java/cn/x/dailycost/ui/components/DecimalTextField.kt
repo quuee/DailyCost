@@ -16,7 +16,8 @@ fun DecimalInputField(
     value: Double,
     onValueChange: (Double) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    error: Boolean = false
 ) {
     // 格式化显示：整数时不显示小数点，小数时保留2位
     val displayText = remember(value) {
@@ -97,7 +98,8 @@ fun DecimalInputField(
         modifier = modifier,
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        singleLine = true
+        singleLine = true,
+        isError = error
     )
 }
 

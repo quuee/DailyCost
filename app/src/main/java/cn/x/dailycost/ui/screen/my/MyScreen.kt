@@ -91,6 +91,33 @@ fun MyScreen(
                         contentDescription = ""
                     )
                 }
+                // 简单点数据同步方案
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable { },
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("导出json数据")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = ""
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable { },
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("导入json数据")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = ""
+                    )
+                }
             }
         }
 
