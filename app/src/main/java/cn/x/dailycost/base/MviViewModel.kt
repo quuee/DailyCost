@@ -1,4 +1,4 @@
-package cn.q.ui.base
+package cn.x.dailycost.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

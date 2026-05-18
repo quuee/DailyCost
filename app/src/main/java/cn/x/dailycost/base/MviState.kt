@@ -1,4 +1,4 @@
-package cn.q.ui.base
+package cn.x.dailycost.base
 
 /**
  * MVI State - UI 状态的单一数据源
