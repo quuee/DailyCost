@@ -50,6 +50,7 @@ data class MainState(
     val goodsItems: List<GoodsItemEntity> = emptyList(),
     // 查询获得分类集合
     val categories: List<CategoryEntity> = emptyList(),
+    // 将分类集合转map
     val categoryMap: Map<Long, CategoryEntity> = emptyMap(),
 
     // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
@@ -64,6 +65,7 @@ data class MainState(
 // Intent - 用户操作
 sealed class MainIntent : MviIntent {
     data object SyncRemote : MainIntent()
+    data object ErrorDismissed : MainIntent()
     data class ToggleGoods(val gid: Long) : MainIntent()
     data class CreateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
     data class DeleteGoods(val goodsItem: GoodsItemEntity) : MainIntent()
@@ -99,6 +101,7 @@ sealed class MainIntent : MviIntent {
 // Effect：一次性事件
 sealed class MainEffect : MviEffect {
     data class ShowMessage(val message: String) : MainEffect()
+    data object NavigateToHome : MainEffect()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -199,6 +202,14 @@ class MainScreenVM(
     override suspend fun handleIntent(intent: MainIntent) {
         when (intent) {
             is MainIntent.SyncRemote -> syncRemote()
+            is MainIntent.ErrorDismissed -> {
+                setState {
+                    copy(
+                        error = null,
+                    )
+                }
+            }
+
             is MainIntent.ToggleGoods -> toggleGoods(intent.gid)
             is MainIntent.DeleteGoods -> deleteGoods(intent.goodsItem)
             is MainIntent.CreateGoods -> createGoods(intent.goodsItem)
@@ -270,10 +281,14 @@ class MainScreenVM(
     private suspend fun deleteGoods(goodsItem: GoodsItemEntity) {
         goodsItemDao.delete(goodsItem)
         sendEffect(MainEffect.ShowMessage("删除成功"))
+        sendEffect(MainEffect.NavigateToHome)
+
     }
 
     private suspend fun updateGoods(goodsItem: GoodsItemEntity) {
         goodsItemDao.update(goodsItem)
+        sendEffect(MainEffect.ShowMessage("修改成功"))
+        sendEffect(MainEffect.NavigateToHome)
     }
 
     private fun changeGoodsAttr(
@@ -356,17 +371,34 @@ class MainScreenVM(
     private suspend fun createGoods(goodsItem: GoodsItemEntity) {
         if (goodsItem.price <= 0) {
 //            sendEffect(MainEffect.ShowMessage("购入价格必填"))
+            setState {
+                copy(
+                    error = "购入价格必填",
+                )
+            }
             return
         }
         if (goodsItem.buyDate <= 0) {
 //            sendEffect(MainEffect.ShowMessage("购入时间必填"))
+            setState {
+                copy(
+                    error = "购入时间必填",
+                )
+            }
             return
         }
         if (goodsItem.goodsName.isBlank()) {
 //            sendEffect(MainEffect.ShowMessage("名称必填"))
+            setState {
+                copy(
+                    error = "名称必填",
+                )
+            }
             return
         }
         goodsItemDao.insert(goodsItem)
+        sendEffect(MainEffect.ShowMessage("创建成功"))
+        sendEffect(MainEffect.NavigateToHome)
     }
 
     private suspend fun load() {

@@ -30,6 +30,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -76,6 +78,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.CategoryEntity
@@ -145,6 +148,9 @@ fun GoodsScreen(
                 is MainEffect.ShowMessage -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
+                is MainEffect.NavigateToHome -> {
+                    navController.popBackStack()
+                }
             }
         }
     }
@@ -179,12 +185,12 @@ fun GoodsScreen(
                 TextButton(
                     enabled = gid != null && gid > 0L,
                     onClick = {
-                        // mainVM.processIntent(MainIntent.DeleteGoods(gid))
+                         mainVM.processIntent(MainIntent.DeleteGoods(goods))
                     }) {
                     Text("Delete")
                 }
                 TextButton(
-                    enabled = goods.goodsName.isNotEmpty() && goods.price > 0 && goods.buyDate > 0,
+//                    enabled = goods.goodsName.isNotEmpty() && goods.price > 0 && goods.buyDate > 0,
                     onClick = {
                         if (state.goodsFormData.gid > 0L) {
                             // 编辑
@@ -222,9 +228,7 @@ fun GoodsScreen(
                                     )
                                 )
                             )
-
                         }
-                        navController.popBackStack()
                     }) {
                     Text("Save")
                 }
@@ -652,6 +656,14 @@ fun GoodsScreen(
             }
         }
 
+        state.error?.let { errorMsg ->
+            BasicAlertDialog(
+                { mainVM.processIntent(MainIntent.ErrorDismissed) },
+                Modifier,
+                DialogProperties(),
+                { Text(errorMsg) })
+        }
+
     }
 }
 
@@ -749,6 +761,7 @@ private fun CategoryIconsSheet(
         "全部分类",
         "电子数码",
         "护肤美妆",
+        "衣裤鞋帽首饰",
         "家用电器",
         "户外运动",
         "日常工具",
@@ -800,12 +813,13 @@ private fun CategoryIconsSheet(
             0 -> IconContent(iconInt, onSelectIcon, AppIcons.allIcons)
             1 -> IconContent(iconInt, onSelectIcon, AppIcons.digitalIcons)
             2 -> IconContent(iconInt, onSelectIcon, AppIcons.beautyProductsIcons)
-            3 -> IconContent(iconInt, onSelectIcon, AppIcons.homeAppliances)
-            4 -> IconContent(iconInt, onSelectIcon, AppIcons.outdoorSports)
-            5 -> IconContent(iconInt, onSelectIcon, AppIcons.toolIcons)
-            6 -> IconContent(iconInt, onSelectIcon, AppIcons.instrumentIcons)
-            7 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
-            8 -> IconContent(iconInt, onSelectIcon, AppIcons.otherIcons)
+            3 -> IconContent(iconInt, onSelectIcon, AppIcons.clothesPantsShoesHatsIcons)
+            4 -> IconContent(iconInt, onSelectIcon, AppIcons.homeAppliances)
+            5 -> IconContent(iconInt, onSelectIcon, AppIcons.outdoorSports)
+            6 -> IconContent(iconInt, onSelectIcon, AppIcons.toolIcons)
+            7 -> IconContent(iconInt, onSelectIcon, AppIcons.instrumentIcons)
+            8 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
+            9 -> IconContent(iconInt, onSelectIcon, AppIcons.otherIcons)
         }
 
         Button(
