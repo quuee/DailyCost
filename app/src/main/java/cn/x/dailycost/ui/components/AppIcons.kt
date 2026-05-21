@@ -157,6 +157,7 @@ object AppIcons {
         IconItem("衣柜", R.drawable.ic_yigui),
         IconItem("椅子", R.drawable.ic_yizi),
         IconItem("鱼缸", R.drawable.ic_yugang),
+        IconItem("显示器支架", R.drawable.ic_xianshiqizhijia),
 
         IconItem("餐具", R.drawable.ic_canju),
         IconItem("厨具", R.drawable.ic_chuju),

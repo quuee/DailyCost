@@ -48,7 +48,7 @@ fun AppNavHost() {
         composable(
             route = Routes.DataSync.route
         ) {
-            DataSyncScreen()
+            DataSyncScreen(navController = navController)
         }
 
         composable(

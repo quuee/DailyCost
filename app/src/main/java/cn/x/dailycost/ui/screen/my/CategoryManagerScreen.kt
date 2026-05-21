@@ -90,6 +90,7 @@ fun CategoryManagerScreen(
                         modifier = Modifier.clickable(onClick = {
                             // 打开创建窗口
                             showCreateCategoryBottomSheet = true
+                            selectCategory = null
                         })
                     )
                 }
@@ -151,7 +152,7 @@ private fun CreateCategorySheet(
         Color(0XFFFFE9CE).copy(alpha = 0.9f),
         Color(0XFFFF92A4).copy(alpha = 0.9f),
 
-    )
+        )
     // 记录当前选中的颜色，初始值可以设为 null 或列表中的第一个
     var selectedColor by remember { mutableStateOf<Color?>(null) }
 
@@ -174,7 +175,6 @@ private fun CreateCategorySheet(
                 minLines = 1,
                 maxLines = 1,
                 label = { Text("分类名称") },
-//            placeholder = { Text("请输入..") }, // 占位符提示
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,   // 聚焦时边框透明（去掉边框/下划线）
                     unfocusedBorderColor = Color.Transparent, // 未聚焦时边框透明（去掉边框/下划线）
@@ -292,6 +292,7 @@ private fun CategoryItem(
                 onDelete(category)
             })
         )
+
         Spacer(modifier = Modifier.width(16.dp))
 
         // 拖动排序

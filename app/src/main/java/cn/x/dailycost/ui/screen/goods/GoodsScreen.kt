@@ -58,6 +58,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -130,8 +131,8 @@ fun GoodsScreen(
     var cameraExpanded by remember { mutableStateOf(true) }
 
     // 表单属性
-    var price by remember { mutableStateOf(0.0) }
-    var recoverHealthMoney by remember { mutableStateOf(0.0) }
+    var price by remember { mutableDoubleStateOf(0.0) }
+    var recoverHealthMoney by remember { mutableDoubleStateOf(0.0) }
 
 
     // 初始加载
