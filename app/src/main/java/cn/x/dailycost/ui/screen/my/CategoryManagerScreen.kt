@@ -1,6 +1,5 @@
 package cn.x.dailycost.ui.screen.my
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -117,8 +116,8 @@ fun CategoryManagerScreen(
         ) {
             itemsIndexed(
                 state.categories,
-                key = { _, category -> category.cid }) { index, category ->
-                // todo 为什么界面重组3次
+                ) { index, category ->
+                // 为什么界面重组3次
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -148,22 +147,17 @@ fun CategoryManagerScreen(
                             )
                         }
                 ) {
-                    Row() {
-                        Text("$index")
-                        CategoryItem(
-                            category,
-                            onShowEditSheet = {
-                                showCreateCategoryBottomSheet = true
-                                selectCategory = it
-                            },
-                            onDelete = { categoryVM.processIntent(CategoryIntent.DeleteCategory(it)) },
-                            startDrag = { categoryVM.processIntent(CategoryIntent.StartDrag(index)) },
-                            updateDrag = { categoryVM.processIntent(CategoryIntent.UpdateDrag(it)) },
-                            finishDrag = { categoryVM.processIntent(CategoryIntent.FinishDrag) }
-                        )
-                    }
-
-
+                    CategoryItem(
+                        category,
+                        onShowEditSheet = {
+                            showCreateCategoryBottomSheet = true
+                            selectCategory = it
+                        },
+                        onDelete = { categoryVM.processIntent(CategoryIntent.DeleteCategory(it)) },
+                        startDrag = { categoryVM.processIntent(CategoryIntent.StartDrag(index)) },
+                        updateDrag = { categoryVM.processIntent(CategoryIntent.UpdateDrag(it)) },
+                        finishDrag = { categoryVM.processIntent(CategoryIntent.FinishDrag) }
+                    )
                 }
             }
         }

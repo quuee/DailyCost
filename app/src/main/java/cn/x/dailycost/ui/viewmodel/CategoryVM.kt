@@ -141,7 +141,6 @@ class CategoryVM(
     }
 
     // 计算和交换位置
-    // TODO BUG 交换时向上索引0,向下索引1
     private fun calculateDeltaY(
         someoneIndex: Int, // 某项索引
         someoneTopY: Float,// 某项头部Y坐标
