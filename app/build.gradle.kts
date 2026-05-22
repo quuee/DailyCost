@@ -53,11 +53,9 @@ android {
 dependencies {
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime)
-    implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.activity.compose)
-
-//    implementation("androidx.camera:camera-camera2:1.6.0")
+    implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.runtime)
 
     // Compose BOM 管理版本
     implementation(platform(libs.androidx.compose.bom))
@@ -68,6 +66,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
 
     // Navigation3
     implementation(libs.androidx.navigation.compose)
@@ -87,7 +86,7 @@ dependencies {
     implementation(libs.bundles.coroutines)
 
     // Serialization
-//    implementation(libs.kotlinx.serialization.json)
+    //    implementation(libs.kotlinx.serialization.json)
 
     // Coil 图片加载
     implementation(libs.coil.compose)
@@ -95,6 +94,8 @@ dependencies {
 
     // Permissions
     implementation(libs.accompanist.permissions)
+
+    //    implementation("androidx.camera:camera-camera2:1.6.0")
 
     // Testing
     testImplementation(libs.junit)
