@@ -1,8 +1,10 @@
 package cn.x.dailycost.ui.screen.my
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,13 +21,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Dehaze
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,17 +48,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
 import cn.x.dailycost.ui.viewmodel.CategoryIntent
 import cn.x.dailycost.ui.viewmodel.CategoryVM
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +75,8 @@ fun CategoryManagerScreen(
     navController: NavController
 ) {
     val state by categoryVM.state.collectAsState()
+    val draggingOffset by categoryVM.draggingOffset.collectAsState()
+    val draggingIndex by categoryVM.draggingIndex.collectAsState()
 
     var showCreateCategoryBottomSheet by remember { mutableStateOf(false) }
     var selectCategory: CategoryEntity? by rememberSaveable { mutableStateOf(null) }
@@ -103,14 +115,56 @@ fun CategoryManagerScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            items(state.categories) { category ->
-                CategoryItem(
-                    category,
-                    onShowEditSheet = {
-                        showCreateCategoryBottomSheet = true
-                        selectCategory = it
-                    },
-                    onDelete = { categoryVM.processIntent(CategoryIntent.DeleteCategory(it)) })
+            itemsIndexed(
+                state.categories,
+                key = { _, category -> category.cid }) { index, category ->
+                // todo 为什么界面重组3次
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .zIndex(if (draggingIndex == index) 1f else 0f)
+                        .offset {
+                            // 拖动后的偏移量（位置）
+                            if (draggingIndex == index) {
+                                IntOffset(
+                                    draggingOffset.x.roundToInt(),
+                                    draggingOffset.y.roundToInt()
+                                )
+                            } else {
+                                IntOffset.Zero
+                            }
+                        }
+                        .onGloballyPositioned { layoutCoordinates ->
+//                            Log.d("Debug", "CategoryManagerScreen someoneIndex: $index")
+                            // 获取项的位置信息
+                            val position = layoutCoordinates.positionInWindow()
+                            categoryVM.processIntent(
+                                CategoryIntent.CalculateDeltaY(
+                                    someoneIndex = index,
+                                    someoneTopY = position.y,
+                                    someoneBottomY = position.y + layoutCoordinates.size.height
+                                )
+                            )
+                        }
+                ) {
+                    Row() {
+                        Text("$index")
+                        CategoryItem(
+                            category,
+                            onShowEditSheet = {
+                                showCreateCategoryBottomSheet = true
+                                selectCategory = it
+                            },
+                            onDelete = { categoryVM.processIntent(CategoryIntent.DeleteCategory(it)) },
+                            startDrag = { categoryVM.processIntent(CategoryIntent.StartDrag(index)) },
+                            updateDrag = { categoryVM.processIntent(CategoryIntent.UpdateDrag(it)) },
+                            finishDrag = { categoryVM.processIntent(CategoryIntent.FinishDrag) }
+                        )
+                    }
+
+
+                }
             }
         }
 
@@ -257,7 +311,10 @@ private fun CreateCategorySheet(
 private fun CategoryItem(
     category: CategoryEntity,
     onShowEditSheet: (CategoryEntity) -> Unit,
-    onDelete: (CategoryEntity) -> Unit
+    onDelete: (CategoryEntity) -> Unit,
+    startDrag: () -> Unit,
+    updateDrag: (Offset) -> Unit,
+    finishDrag: () -> Unit,
 ) {
 
     Row(
@@ -268,7 +325,7 @@ private fun CategoryItem(
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(48.dp)
                 .padding(8.dp)
                 .background(
                     color = Color(category.color).copy(alpha = 0.6f),
@@ -296,9 +353,42 @@ private fun CategoryItem(
         Spacer(modifier = Modifier.width(16.dp))
 
         // 拖动排序
+        DragHandle(
+            onDragStart = { startDrag() },
+            onDragUpdate = { updateDrag(it) },
+            onDragEnd = { finishDrag() },
+            onDragCancel = { finishDrag() }
+        )
+    }
+}
+
+@Composable
+private fun DragHandle(
+    onDragStart: () -> Unit,
+    onDragUpdate: (Offset) -> Unit,
+    onDragEnd: () -> Unit,
+    onDragCancel: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { onDragStart() },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        onDragUpdate(dragAmount)
+                    },
+                    onDragEnd = { onDragEnd() },
+                    onDragCancel = { onDragCancel() }
+                )
+            },
+        contentAlignment = Alignment.Center
+    ) {
+//        Icon(modifier = Modifier.align(Alignment.CenterVertically))(
         Icon(
-            imageVector = Icons.Filled.Dehaze,
-            contentDescription = null
+            imageVector = Icons.Default.DragHandle,
+            contentDescription = "drag sort"
         )
     }
 }
@@ -307,6 +397,5 @@ private fun CategoryItem(
 @Preview
 @Composable
 fun CPPP() {
-//    CategoryManagerScreen()
-    CreateCategorySheet(category = null, onConfirm = {})
+
 }

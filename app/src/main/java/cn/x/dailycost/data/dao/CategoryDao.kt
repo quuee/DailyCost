@@ -17,8 +17,8 @@ interface CategoryDao {
     @Update(onConflict = OnConflictStrategy.REPLACE) // 发生冲突时替换旧数据
     suspend fun update(category: CategoryEntity)
 
-//    @Query("DELETE FROM category where cid = :cid")
-//    suspend fun deleteByCid(cid: Long)
+    @Update(onConflict = OnConflictStrategy.REPLACE) // 发生冲突时替换旧数据
+    suspend fun updateAll(categories: List<CategoryEntity>)
 
     @Delete
     suspend fun delete(category: CategoryEntity)
