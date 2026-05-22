@@ -36,9 +36,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -52,7 +49,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -79,6 +75,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.navigation.NavController
@@ -88,30 +85,31 @@ import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.CameraCaptureComponent
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
 import cn.x.dailycost.ui.components.DecimalInputField
-import cn.x.dailycost.ui.screen.main.MainEffect
-import cn.x.dailycost.ui.screen.main.MainIntent
-import cn.x.dailycost.ui.screen.main.MainScreenVM
-import cn.x.dailycost.ui.screen.my.ReceiveContent
-import cn.x.dailycost.ui.screen.my.SendContent
 import cn.x.dailycost.ui.theme.GradientStart
+import cn.x.dailycost.ui.viewmodel.CategoryVM
+import cn.x.dailycost.ui.viewmodel.GoodsEffect
+import cn.x.dailycost.ui.viewmodel.GoodsIntent
+import cn.x.dailycost.ui.viewmodel.GoodsVM
 import cn.x.dailycost.util.formatTimestamp
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalField
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoodsScreen(
-    mainVM: MainScreenVM = koinViewModel(),
+    goodsVM: GoodsVM = koinViewModel(),
+    categoryVM: CategoryVM = koinViewModel(),
     navController: NavController,
     gid: Long?,
 ) {
 
-    val state by mainVM.state.collectAsState()
-    val goods = state.goodsFormData
+    val goodsState by goodsVM.state.collectAsState()
+    val goods = goodsState.goodsFormData
+
+    val categoryState by categoryVM.state.collectAsState()
 
     val context = LocalContext.current
 
@@ -139,17 +137,18 @@ fun GoodsScreen(
     LaunchedEffect(gid) {
         if (gid != null && gid > 0L) {
             // 获取物品数据
-            mainVM.processIntent(MainIntent.GetGoodsById(gid))
+            goodsVM.processIntent(GoodsIntent.ToggleGoods(gid))
         }
     }
 
     LaunchedEffect(Unit) {
-        mainVM.effect.collect { effect ->
+        goodsVM.effect.collect { effect ->
             when (effect) {
-                is MainEffect.ShowMessage -> {
+                is GoodsEffect.ShowMessage -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
-                is MainEffect.NavigateToHome -> {
+
+                is GoodsEffect.NavigateToHome -> {
                     navController.popBackStack()
                 }
             }
@@ -186,17 +185,17 @@ fun GoodsScreen(
                 TextButton(
                     enabled = gid != null && gid > 0L,
                     onClick = {
-                         mainVM.processIntent(MainIntent.DeleteGoods(goods))
+                        goodsVM.processIntent(GoodsIntent.DeleteGoods(goods))
                     }) {
                     Text("Delete")
                 }
                 TextButton(
 //                    enabled = goods.goodsName.isNotEmpty() && goods.price > 0 && goods.buyDate > 0,
                     onClick = {
-                        if (state.goodsFormData.gid > 0L) {
+                        if (goodsState.goodsFormData.gid > 0L) {
                             // 编辑
-                            mainVM.processIntent(
-                                MainIntent.UpdateGoods(
+                            goodsVM.processIntent(
+                                GoodsIntent.UpdateGoods(
                                     GoodsItemEntity(
                                         gid = goods.gid,
                                         goodsName = goods.goodsName,
@@ -213,8 +212,8 @@ fun GoodsScreen(
                             )
                         } else {
                             // 新增
-                            mainVM.processIntent(
-                                MainIntent.CreateGoods(
+                            goodsVM.processIntent(
+                                GoodsIntent.CreateGoods(
                                     GoodsItemEntity(
                                         gid = 0L,
                                         goodsName = goods.goodsName,
@@ -247,8 +246,8 @@ fun GoodsScreen(
                 OutlinedTextField(
                     value = goods.goodsName,
                     onValueChange = { newText ->
-                        mainVM.processIntent(
-                            MainIntent.ChangeGoodsAttr(
+                        goodsVM.processIntent(
+                            GoodsIntent.ChangeGoodsAttr(
                                 goodsName = newText,
                             )
                         )
@@ -303,7 +302,7 @@ fun GoodsScreen(
                             )
                             HorizontalDivider()
                             if (goods.cid > 0L) {
-                                val result = state.categories.find { it.cid == goods.cid }
+                                val result = categoryState.categories.find { it.cid == goods.cid }
                                 Text(result?.name ?: "全部分类", modifier = Modifier.padding(8.dp))
                             }
 
@@ -355,8 +354,8 @@ fun GoodsScreen(
                                 value = if (goods.price > 0.0) goods.price else price,
                                 onValueChange = {
                                     price = it
-                                    mainVM.processIntent(
-                                        MainIntent.ChangeGoodsAttr(
+                                    goodsVM.processIntent(
+                                        GoodsIntent.ChangeGoodsAttr(
                                             price = price,
                                         )
                                     )
@@ -426,8 +425,8 @@ fun GoodsScreen(
                                     value = if (goods.recoverHealthMoney > 0.0) goods.recoverHealthMoney else recoverHealthMoney,
                                     onValueChange = {
                                         recoverHealthMoney = it
-                                        mainVM.processIntent(
-                                            MainIntent.ChangeGoodsAttr(
+                                        goodsVM.processIntent(
+                                            GoodsIntent.ChangeGoodsAttr(
                                                 recoverHealthMoney = recoverHealthMoney,
                                             )
                                         )
@@ -444,8 +443,8 @@ fun GoodsScreen(
                 TextField(
                     value = goods.remark ?: "",              // 绑定的文本值
                     onValueChange = {
-                        mainVM.processIntent(
-                            MainIntent.ChangeGoodsAttr(
+                        goodsVM.processIntent(
+                            GoodsIntent.ChangeGoodsAttr(
                                 remark = it
                             )
                         )
@@ -523,7 +522,7 @@ fun GoodsScreen(
                                         // 这里可以拿到拍好的照片 Uri，进行上传服务器等后续业务处理
                                         // content://cn.x.dailycost.debug.fileprovider/camera_cache/IMG_20260502_181434.jpg
                                         Log.d("DEBUG PHOTO", "onPhotoCaptured: $uri")
-                                        mainVM.processIntent(MainIntent.ChangeGoodsAttr(photoUri = uri.toString()))
+                                        goodsVM.processIntent(GoodsIntent.ChangeGoodsAttr(photoUri = uri.toString()))
                                     }
                                 )
                             }
@@ -541,11 +540,11 @@ fun GoodsScreen(
             onDismissRequest = { showCategoryBottomSheet = false } // 关闭弹窗
         ) {
             CategorySheet(
-                categories = state.categories,
+                categories = categoryState.categories,
                 onSelect = {
 //                    selectedCategory = it
-                    mainVM.processIntent(
-                        MainIntent.ChangeGoodsAttr(
+                    goodsVM.processIntent(
+                        GoodsIntent.ChangeGoodsAttr(
                             cid = it.cid,
                         )
                     )
@@ -563,8 +562,8 @@ fun GoodsScreen(
             CategoryIconsSheet(
                 iconInt = goods.iconInt,
                 onSelectIcon = {
-                    mainVM.processIntent(
-                        MainIntent.ChangeGoodsAttr(
+                    goodsVM.processIntent(
+                        GoodsIntent.ChangeGoodsAttr(
                             iconInt = it,
                         )
                     )
@@ -600,8 +599,8 @@ fun GoodsScreen(
                     maxDate = LocalDate.now(), // 限制最大日期为今天
                     onDateChanged = { date ->
                         selectedBuyDate = date
-                        mainVM.processIntent(
-                            MainIntent.ChangeGoodsAttr(
+                        goodsVM.processIntent(
+                            GoodsIntent.ChangeGoodsAttr(
                                 buyDateMillis = selectedBuyDate.atStartOfDay()
                                     .atZone(ZoneId.systemDefault())
                                     .toInstant()
@@ -641,8 +640,8 @@ fun GoodsScreen(
                     maxDate = LocalDate.of(2099, 12, 31),
                     onDateChanged = { date ->
                         selectedRetireDate = date
-                        mainVM.processIntent(
-                            MainIntent.ChangeGoodsAttr(
+                        goodsVM.processIntent(
+                            GoodsIntent.ChangeGoodsAttr(
                                 retireDateMillis = selectedRetireDate.atStartOfDay()
                                     .atZone(ZoneId.systemDefault())
                                     .toInstant()
@@ -657,12 +656,19 @@ fun GoodsScreen(
             }
         }
 
-        state.error?.let { errorMsg ->
-            BasicAlertDialog(
-                { mainVM.processIntent(MainIntent.ErrorDismissed) },
-                Modifier,
-                DialogProperties(),
-                { Text(errorMsg) })
+        goodsState.error?.let { errorMsg ->
+            Dialog(onDismissRequest = { goodsVM.processIntent(GoodsIntent.ErrorDismissed) }) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp)
+                ) {
+                    Column() {
+                        Text("Warn")
+                        Text(errorMsg)
+                    }
+                }
+
+
+            }
         }
 
     }

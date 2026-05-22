@@ -4,7 +4,8 @@ import androidx.room.Room
 import cn.x.dailycost.data.DailyCostData
 import cn.x.dailycost.data.dao.CategoryDao
 import cn.x.dailycost.data.dao.GoodsItemDao
-import cn.x.dailycost.ui.screen.main.MainScreenVM
+import cn.x.dailycost.ui.viewmodel.CategoryVM
+import cn.x.dailycost.ui.viewmodel.GoodsVM
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
@@ -30,9 +31,14 @@ val databaseModule: Module = module {
 
 // ViewModel 模块 (使用 Koin Compose 4.x 语法)
 val viewModelModule: Module = module {
-    viewModel<MainScreenVM> {
-        MainScreenVM(
+    viewModel<GoodsVM> {
+        GoodsVM(
             goodsItemDao = get<GoodsItemDao>(),
+        )
+    }
+
+    viewModel<CategoryVM> {
+        CategoryVM(
             categoryDao = get<CategoryDao>()
         )
     }

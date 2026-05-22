@@ -1,9 +1,7 @@
-package cn.x.dailycost.ui.screen.main
+package cn.x.dailycost.ui.viewmodel
 
 
 import android.util.Log
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.viewModelScope
 import androidx.sqlite.db.SimpleSQLiteQuery
 import cn.x.dailycost.base.MviEffect
@@ -11,9 +9,7 @@ import cn.x.dailycost.base.MviIntent
 import cn.x.dailycost.base.MviState
 import cn.x.dailycost.base.MviViewModel
 import cn.x.dailycost.R
-import cn.x.dailycost.data.dao.CategoryDao
 import cn.x.dailycost.data.dao.GoodsItemDao
-import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.util.getDaysDifference
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +24,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 
 // State - UI 状态
-data class MainState(
+data class GoodsState(
     override val isLoading: Boolean = false,
     override val error: String? = null,
 
@@ -48,10 +44,6 @@ data class MainState(
     ),
     // 查询获得物品集合
     val goodsItems: List<GoodsItemEntity> = emptyList(),
-    // 查询获得分类集合
-    val categories: List<CategoryEntity> = emptyList(),
-    // 将分类集合转map
-    val categoryMap: Map<Long, CategoryEntity> = emptyMap(),
 
     // 这里想展示可供选择的排序字段,选择完成后 有个实际字段用于排序
     val sortFiledList: List<String> = listOf("购入时间", "创建时间", "退役时间", "价格"),
@@ -63,13 +55,13 @@ data class MainState(
 ) : MviState
 
 // Intent - 用户操作
-sealed class MainIntent : MviIntent {
-    data object SyncRemote : MainIntent()
-    data object ErrorDismissed : MainIntent()
-    data class ToggleGoods(val gid: Long) : MainIntent()
-    data class CreateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
-    data class DeleteGoods(val goodsItem: GoodsItemEntity) : MainIntent()
-    data class UpdateGoods(val goodsItem: GoodsItemEntity) : MainIntent()
+sealed class GoodsIntent : MviIntent {
+//    data object SyncRemote : GoodsIntent()
+    data object ErrorDismissed : GoodsIntent()
+    data class ToggleGoods(val gid: Long) : GoodsIntent()
+    data class CreateGoods(val goodsItem: GoodsItemEntity) : GoodsIntent()
+    data class DeleteGoods(val goodsItem: GoodsItemEntity) : GoodsIntent()
+    data class UpdateGoods(val goodsItem: GoodsItemEntity) : GoodsIntent()
     data class ChangeGoodsAttr(
         val goodsName: String? = null,
         val price: Double? = null,
@@ -81,65 +73,33 @@ sealed class MainIntent : MviIntent {
         val remark: String? = null,
         val recoverHealthMoney: Double? = null,
     ) :
-        MainIntent()
-
-    data class GetGoodsById(val gid: Long) : MainIntent()
+        GoodsIntent()
 
     data class SearchGoods(
         val name: String?,
         val cid: Long?,
         val sortField: String?,
         val sortOrder: Int?
-    ) : MainIntent()
-
-    data class CreateCategory(val category: CategoryEntity) : MainIntent()
-    data class DeleteCategory(val category: CategoryEntity) : MainIntent()
-    data class UpdateCategory(val category: CategoryEntity) : MainIntent()
+    ) : GoodsIntent()
 
 }
 
 // Effect：一次性事件
-sealed class MainEffect : MviEffect {
-    data class ShowMessage(val message: String) : MainEffect()
-    data object NavigateToHome : MainEffect()
+sealed class GoodsEffect : MviEffect {
+    data class ShowMessage(val message: String) : GoodsEffect()
+    data object NavigateToHome : GoodsEffect()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class MainScreenVM(
+class GoodsVM(
     private val goodsItemDao: GoodsItemDao,
-    private val categoryDao: CategoryDao,
-) : MviViewModel<MainState, MainIntent, MainEffect>(MainState()) {
+) : MviViewModel<GoodsState, GoodsIntent, GoodsEffect>(GoodsState()) {
 
     // 用于触发搜索的内部 Flow（支持防抖）
     private val searchGoodsTriggerFlow =
         MutableSharedFlow<SearchGoodsParams>(extraBufferCapacity = 1)
 
     init {
-        viewModelScope.launch {
-            categoryDao.getAllCategories().collect { items ->
-                setState {
-                    copy(
-                        categories = listOf(
-                            CategoryEntity(
-                                cid = 0L,
-                                name = "全部分类",
-                                color = Color(0XFFF8F1E4).toArgb(),
-                                sort = 1
-                            )
-                        ) + items,
-                        categoryMap = (listOf(
-                            CategoryEntity(
-                                cid = 0L,
-                                name = "全部分类",
-                                color = Color(0XFFF8F1E4).toArgb(),
-                                sort = 1
-                            )
-                        ) + items).associateBy { it.cid }
-                    )
-                }
-            }
-        }
-
         // 监听搜索触发，并自动收集最新的查询结果
         viewModelScope.launch {
             searchGoodsTriggerFlow
@@ -199,10 +159,10 @@ class MainScreenVM(
 
     }
 
-    override suspend fun handleIntent(intent: MainIntent) {
+    override suspend fun handleIntent(intent: GoodsIntent) {
         when (intent) {
-            is MainIntent.SyncRemote -> syncRemote()
-            is MainIntent.ErrorDismissed -> {
+//            is GoodsIntent.SyncRemote -> syncRemote()
+            is GoodsIntent.ErrorDismissed -> {
                 setState {
                     copy(
                         error = null,
@@ -210,11 +170,11 @@ class MainScreenVM(
                 }
             }
 
-            is MainIntent.ToggleGoods -> toggleGoods(intent.gid)
-            is MainIntent.DeleteGoods -> deleteGoods(intent.goodsItem)
-            is MainIntent.CreateGoods -> createGoods(intent.goodsItem)
-            is MainIntent.UpdateGoods -> updateGoods(intent.goodsItem)
-            is MainIntent.ChangeGoodsAttr -> changeGoodsAttr(
+            is GoodsIntent.ToggleGoods -> getGoodsById(intent.gid)
+            is GoodsIntent.DeleteGoods -> deleteGoods(intent.goodsItem)
+            is GoodsIntent.CreateGoods -> createGoods(intent.goodsItem)
+            is GoodsIntent.UpdateGoods -> updateGoods(intent.goodsItem)
+            is GoodsIntent.ChangeGoodsAttr -> changeGoodsAttr(
                 intent.goodsName,
                 intent.price,
                 intent.cid,
@@ -226,8 +186,7 @@ class MainScreenVM(
                 intent.recoverHealthMoney,
             )
 
-            is MainIntent.GetGoodsById -> getGoodsById(intent.gid)
-            is MainIntent.SearchGoods -> {
+            is GoodsIntent.SearchGoods -> {
                 // 触发搜索（进入 Flow 管道）
                 setState {
                     copy(
@@ -258,10 +217,6 @@ class MainScreenVM(
                 )
             }
 
-            is MainIntent.CreateCategory -> createCategory(intent.category)
-            is MainIntent.DeleteCategory -> deleteCategory(intent.category)
-            is MainIntent.UpdateCategory -> updateCategory(intent.category)
-
         }
     }
 
@@ -276,19 +231,22 @@ class MainScreenVM(
         }
     }
 
-    private fun syncRemote() {}
-    private fun toggleGoods(gid: Long) {}
+    private suspend fun getGoodsById(gid: Long) {
+        val temp = goodsItemDao.getById(gid)
+        setState { copy(goodsFormData = temp) }
+    }
+
     private suspend fun deleteGoods(goodsItem: GoodsItemEntity) {
         goodsItemDao.delete(goodsItem)
-        sendEffect(MainEffect.ShowMessage("删除成功"))
-        sendEffect(MainEffect.NavigateToHome)
+        sendEffect(GoodsEffect.ShowMessage("删除成功"))
+        sendEffect(GoodsEffect.NavigateToHome)
 
     }
 
     private suspend fun updateGoods(goodsItem: GoodsItemEntity) {
         goodsItemDao.update(goodsItem)
-        sendEffect(MainEffect.ShowMessage("修改成功"))
-        sendEffect(MainEffect.NavigateToHome)
+        sendEffect(GoodsEffect.ShowMessage("修改成功"))
+        sendEffect(GoodsEffect.NavigateToHome)
     }
 
     private fun changeGoodsAttr(
@@ -369,6 +327,15 @@ class MainScreenVM(
     }
 
     private suspend fun createGoods(goodsItem: GoodsItemEntity) {
+        if (goodsItem.goodsName.isBlank()) {
+//            sendEffect(MainEffect.ShowMessage("名称必填"))
+            setState {
+                copy(
+                    error = "名称必填",
+                )
+            }
+            return
+        }
         if (goodsItem.price <= 0) {
 //            sendEffect(MainEffect.ShowMessage("购入价格必填"))
             setState {
@@ -387,18 +354,10 @@ class MainScreenVM(
             }
             return
         }
-        if (goodsItem.goodsName.isBlank()) {
-//            sendEffect(MainEffect.ShowMessage("名称必填"))
-            setState {
-                copy(
-                    error = "名称必填",
-                )
-            }
-            return
-        }
+
         goodsItemDao.insert(goodsItem)
-        sendEffect(MainEffect.ShowMessage("创建成功"))
-        sendEffect(MainEffect.NavigateToHome)
+        sendEffect(GoodsEffect.ShowMessage("创建成功"))
+        sendEffect(GoodsEffect.NavigateToHome)
     }
 
     private suspend fun load() {
@@ -411,10 +370,7 @@ class MainScreenVM(
         )
     }
 
-    private suspend fun getGoodsById(gid: Long) {
-        val temp = goodsItemDao.getById(gid)
-        setState { copy(goodsFormData = temp) }
-    }
+
 
     private fun queryGoods(
         name: String?,
@@ -460,17 +416,4 @@ class MainScreenVM(
         val sortOrder: Int?
     )
 
-
-    private suspend fun createCategory(category: CategoryEntity) {
-        // todo 空校验
-        categoryDao.insert(category)
-    }
-
-    private suspend fun updateCategory(category: CategoryEntity) {
-        categoryDao.update(category)
-    }
-
-    private suspend fun deleteCategory(category: CategoryEntity) {
-        categoryDao.delete(category)
-    }
 }

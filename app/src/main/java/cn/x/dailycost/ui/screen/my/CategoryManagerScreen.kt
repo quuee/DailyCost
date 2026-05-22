@@ -53,18 +53,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
-import cn.x.dailycost.ui.screen.main.MainIntent
-import cn.x.dailycost.ui.screen.main.MainScreenVM
+import cn.x.dailycost.ui.viewmodel.CategoryIntent
+import cn.x.dailycost.ui.viewmodel.CategoryVM
 import org.koin.compose.viewmodel.koinViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryManagerScreen(
-    mainVM: MainScreenVM = koinViewModel(),
+    categoryVM: CategoryVM = koinViewModel(),
     navController: NavController
 ) {
-    val state by mainVM.state.collectAsState()
+    val state by categoryVM.state.collectAsState()
 
     var showCreateCategoryBottomSheet by remember { mutableStateOf(false) }
     var selectCategory: CategoryEntity? by rememberSaveable { mutableStateOf(null) }
@@ -110,7 +110,7 @@ fun CategoryManagerScreen(
                         showCreateCategoryBottomSheet = true
                         selectCategory = it
                     },
-                    onDelete = { mainVM.processIntent(MainIntent.DeleteCategory(it)) })
+                    onDelete = { categoryVM.processIntent(CategoryIntent.DeleteCategory(it)) })
             }
         }
 
@@ -121,7 +121,7 @@ fun CategoryManagerScreen(
             CreateCategorySheet(
                 category = selectCategory,
                 onConfirm = {
-                    mainVM.processIntent(MainIntent.CreateCategory(it))
+                    categoryVM.processIntent(CategoryIntent.CreateCategory(it))
                     showCreateCategoryBottomSheet = false
                     selectCategory = null
                 }

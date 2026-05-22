@@ -43,8 +43,10 @@ import cn.x.dailycost.route.Routes
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.SearchBar
 import cn.x.dailycost.ui.components.SortDropdownButton
-import cn.x.dailycost.ui.screen.main.MainIntent
-import cn.x.dailycost.ui.screen.main.MainScreenVM
+import cn.x.dailycost.ui.viewmodel.CategoryVM
+import cn.x.dailycost.ui.viewmodel.GoodsIntent
+import cn.x.dailycost.ui.viewmodel.GoodsVM
+
 import cn.x.dailycost.util.getDate
 import cn.x.dailycost.util.getDaysDifference
 import coil3.compose.AsyncImage
@@ -55,10 +57,12 @@ import java.time.Instant
 
 @Composable
 fun HoldScreen(
-    mainVM: MainScreenVM = koinViewModel(),
+    goodsVM: GoodsVM = koinViewModel(),
+    categoryVM: CategoryVM = koinViewModel(),
     navController: NavController
 ) {
-    val state by mainVM.state.collectAsState()
+    val goodsState by goodsVM.state.collectAsState()
+    val categoryState by categoryVM.state.collectAsState()
 
 //    val everyDayCostTotal by remember {
 //        derivedStateOf {
@@ -76,11 +80,11 @@ fun HoldScreen(
     ) {
         item {
             AssetCard(
-                selectedField = state.selectSortField,
-                options = state.sortFiledList,
+                selectedField = goodsState.selectSortField,
+                options = goodsState.sortFiledList,
                 onOptionSelected = {
-                    mainVM.processIntent(
-                        MainIntent.SearchGoods(
+                    goodsVM.processIntent(
+                        GoodsIntent.SearchGoods(
                             name = null,
                             cid = null,
                             sortField = it,
@@ -88,13 +92,13 @@ fun HoldScreen(
                         )
                     )
                 },
-                asset = state.asset,
-                totalCount = state.goodsItems.size,
-                everyDayCostTotal = state.everyDayCostTotal,
-                selectOrderOption = state.selectSortOrder,
+                asset = goodsState.asset,
+                totalCount = goodsState.goodsItems.size,
+                everyDayCostTotal = goodsState.everyDayCostTotal,
+                selectOrderOption = goodsState.selectSortOrder,
                 onOrderSelected = {
-                    mainVM.processIntent(
-                        MainIntent.SearchGoods(
+                    goodsVM.processIntent(
+                        GoodsIntent.SearchGoods(
                             name = null,
                             cid = null,
                             sortField = null,
@@ -106,10 +110,10 @@ fun HoldScreen(
         }
         stickyHeader {
             SearchBar(
-                state.categories,
+                categoryState.categories,
                 onSearch = { selectedCategory, searchText ->
-                    mainVM.processIntent(
-                        MainIntent.SearchGoods(
+                    goodsVM.processIntent(
+                        GoodsIntent.SearchGoods(
                             searchText,
                             selectedCategory?.cid,
                             null, null
@@ -117,18 +121,18 @@ fun HoldScreen(
                     )
                 })
         }
-        if (state.isLoading) {
+        if (goodsState.isLoading) {
             item {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator() // 加载中转圈圈
                 }
             }
         } else {
-            items(state.goodsItems) { goods ->
+            items(goodsState.goodsItems) { goods ->
 
                 GoodsItem(
                     goods,
-                    bgColor = state.categoryMap[goods.cid]?.color ?: Color(0XFFF8F1E4).toArgb(),
+                    bgColor = categoryState.categoryMap[goods.cid]?.color ?: Color(0XFFF8F1E4).toArgb(),
                     onToggle = { navController.navigate(Routes.Goods.route + "/${it}") })
             }
         }
