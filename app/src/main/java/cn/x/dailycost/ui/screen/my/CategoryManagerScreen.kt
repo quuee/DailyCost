@@ -43,7 +43,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,7 +77,7 @@ fun CategoryManagerScreen(
     val draggingIndex by categoryVM.draggingIndex.collectAsState()
 
     var showCreateCategoryBottomSheet by remember { mutableStateOf(false) }
-    var selectCategory: CategoryEntity? by rememberSaveable { mutableStateOf(null) }
+    var selectCategory: CategoryEntity? by remember { mutableStateOf(null) }
 
 
     Scaffold(

@@ -6,12 +6,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.PhoneIphone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -29,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -89,35 +93,42 @@ fun DataSyncScreen(
 
 @Composable
 fun SendContent(text: String) {
-    Column(
+    LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-            Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text("附近的设备")
-//                    Spacer(modifier = Modifier.width(36.dp))
-                    Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
-                    Icon(imageVector = Icons.Filled.Favorite, contentDescription = null)
-                    Icon(imageVector = Icons.Filled.Settings, contentDescription = null)
+        stickyHeader {
+            Row(
+                modifier = Modifier.padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text("附近的设备")
+                Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
+                Icon(imageVector = Icons.Filled.Favorite, contentDescription = null)
+                Icon(imageVector = Icons.Filled.Settings, contentDescription = null)
 
-                }
-
-                Row() {
-                    Icon(
-                        imageVector = Icons.Filled.Devices,
-                        contentDescription = null
-                    )
-
-                    Text("xxx的手机")
-                }
             }
         }
 
+        repeat(10){
+            item {
+                Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PhoneIphone,
+                            contentDescription = null
+                        )
+                        Text("xxx的手机")
+                    }
+                }
 
+            }
+
+        }
     }
+
 }
 
 @Composable

@@ -161,7 +161,7 @@ fun GoodsScreen(
             .fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("添加物品") },
+                title = { if (gid != null && gid > 0L) Text("物品信息") else Text("添加物品") },
                 navigationIcon = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
