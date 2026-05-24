@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 
 //    alias(libs.plugins.kotlin.serialization)
-//    alias(libs.plugins.parcelize)
     alias(libs.plugins.ksp)
 }
 
@@ -60,7 +59,6 @@ dependencies {
     // Compose BOM 管理版本
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
-    implementation(libs.androidx.compose.ui.text)
 
     // Compose 预览和调试
     debugImplementation(libs.androidx.compose.ui.tooling)
@@ -76,7 +74,6 @@ dependencies {
 
     // Network
     implementation(libs.bundles.network)
-    implementation(libs.gson)
 
     // Room
     implementation(libs.bundles.room)
@@ -93,7 +90,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
 
     // Permissions
-    implementation(libs.accompanist.permissions)
+//    implementation(libs.accompanist.permissions)
 
     //    implementation("androidx.camera:camera-camera2:1.6.0")
 
