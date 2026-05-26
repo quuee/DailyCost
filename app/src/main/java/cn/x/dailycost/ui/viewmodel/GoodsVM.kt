@@ -161,7 +161,6 @@ class GoodsVM(
 
     override suspend fun handleIntent(intent: GoodsIntent) {
         when (intent) {
-//            is GoodsIntent.SyncRemote -> syncRemote()
             is GoodsIntent.ErrorDismissed -> {
                 setState {
                     copy(

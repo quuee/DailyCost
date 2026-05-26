@@ -30,8 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -76,7 +74,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.CategoryEntity
@@ -128,7 +125,7 @@ fun GoodsScreen(
     // 相机card是否展开
     var cameraExpanded by remember { mutableStateOf(true) }
 
-    // 表单属性
+    // 表单属性 中间值
     var price by remember { mutableDoubleStateOf(0.0) }
     var recoverHealthMoney by remember { mutableDoubleStateOf(0.0) }
 
@@ -147,7 +144,6 @@ fun GoodsScreen(
                 is GoodsEffect.ShowMessage -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
-
                 is GoodsEffect.NavigateToHome -> {
                     navController.popBackStack()
                 }

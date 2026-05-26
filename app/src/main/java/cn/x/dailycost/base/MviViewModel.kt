@@ -36,23 +36,25 @@ abstract class MviViewModel<S : MviState, I : MviIntent, E : MviEffect>(
 
     // 发送 Intent
     fun processIntent(intent: I) {
-        viewModelScope.launch {
-            handleIntent(intent)
-        }
+        viewModelScope.launch { handleIntent(intent)  }
     }
 
     // 更新状态 (不可变)
     protected fun setState(reducer: S.() -> S) {
-        _state.update { currentState ->
-            currentState.reducer()
-        }
+//        _state.update { currentState ->
+//            currentState.reducer()
+//        }
+        // 新写法
+        _state.update { it.reducer() }
     }
 
     // 发送副作用
     protected fun sendEffect(effect: E) {
-        viewModelScope.launch {
-            _effect.send(effect)
-        }
+//        viewModelScope.launch {
+//            _effect.send(effect)
+//        }
+        // 新写法 使用 trySend 避免不必要的协程挂起开销
+        _effect.trySend(effect)
     }
 
     // 获取当前状态快照
