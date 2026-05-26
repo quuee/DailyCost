@@ -219,22 +219,6 @@ class GoodsVM(
         }
     }
 
-    // 将 UI 的排序字段映射为数据库实际字段
-    private fun mapSortFieldToDb(uiField: String?): String {
-        return when (uiField) {
-            "创建时间" -> "createDate"
-            "购入时间" -> "buyDate"
-            "退役时间" -> "retireDate"
-            "价格" -> "price"
-            else -> "buyDate" // 默认排序字段
-        }
-    }
-
-    private suspend fun getGoodsById(gid: Long) {
-        val temp = goodsItemDao.getById(gid)
-        setState { copy(goodsFormData = temp) }
-    }
-
     private suspend fun deleteGoods(goodsItem: GoodsItemEntity) {
         goodsItemDao.delete(goodsItem)
         sendEffect(GoodsEffect.ShowMessage("删除成功"))
@@ -259,69 +243,85 @@ class GoodsVM(
         remark: String?,
         recoverHealthMoney: Double?,
     ) {
-        // todo 能合并嘛
-        goodsName?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(goodsName = goodsName)
+//        goodsName?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(goodsName = goodsName)
+//                )
+//            }
+//        }
+//        price?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(price = price)
+//                )
+//            }
+//        }
+//        cid?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(cid = cid)
+//                )
+//            }
+//        }
+//        iconInt?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(iconInt = iconInt)
+//                )
+//            }
+//        }
+//        buyDateMillis?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(buyDate = buyDateMillis)
+//                )
+//            }
+//        }
+//        retireDateMillis?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(retireDate = retireDateMillis)
+//                )
+//            }
+//        }
+//        photoUri?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(realPictureUri = photoUri)
+//                )
+//            }
+//        }
+//        remark?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(remark = remark)
+//                )
+//            }
+//        }
+//        recoverHealthMoney?.let {
+//            setState {
+//                copy(
+//                    goodsFormData = goodsFormData.copy(recoverHealthMoney = recoverHealthMoney)
+//                )
+//            }
+//        }
+
+        // 这种写法有一个隐患：无法将字段显式设置为 null。因为 ?: goodsFormData.xxx 会把传入的 null 当作"不更新"处理
+        setState {
+            copy(
+                goodsFormData = goodsFormData.copy(
+                    goodsName = goodsName ?: goodsFormData.goodsName,
+                    price = price ?: goodsFormData.price,
+                    cid = cid ?: goodsFormData.cid,
+                    iconInt = iconInt ?: goodsFormData.iconInt,
+                    buyDate = buyDateMillis ?: goodsFormData.buyDate,
+                    retireDate = retireDateMillis ?: goodsFormData.retireDate,
+                    realPictureUri = photoUri ?: goodsFormData.realPictureUri,
+                    remark = remark ?: goodsFormData.remark,
+                    recoverHealthMoney = recoverHealthMoney ?: goodsFormData.recoverHealthMoney,
                 )
-            }
-        }
-        price?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(price = price)
-                )
-            }
-        }
-        cid?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(cid = cid)
-                )
-            }
-        }
-        iconInt?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(iconInt = iconInt)
-                )
-            }
-        }
-        buyDateMillis?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(buyDate = buyDateMillis)
-                )
-            }
-        }
-        retireDateMillis?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(retireDate = retireDateMillis)
-                )
-            }
-        }
-        photoUri?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(realPictureUri = photoUri)
-                )
-            }
-        }
-        remark?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(remark = remark)
-                )
-            }
-        }
-        recoverHealthMoney?.let {
-            setState {
-                copy(
-                    goodsFormData = goodsFormData.copy(recoverHealthMoney = recoverHealthMoney)
-                )
-            }
+            )
         }
     }
 
@@ -359,6 +359,11 @@ class GoodsVM(
         sendEffect(GoodsEffect.NavigateToHome)
     }
 
+    private suspend fun getGoodsById(gid: Long) {
+        val temp = goodsItemDao.getById(gid)
+        setState { copy(goodsFormData = temp) }
+    }
+
     private suspend fun load() {
         // 触发搜索（进入 Flow 管道）
         // todo 得保存这几个条件
@@ -368,8 +373,6 @@ class GoodsVM(
             SearchGoodsParams(null, 0L, state.value.selectSortField, state.value.selectSortOrder)
         )
     }
-
-
 
     private fun queryGoods(
         name: String?,
@@ -405,6 +408,17 @@ class GoodsVM(
         val sql = sqlBuilder.toString()
         val query = SimpleSQLiteQuery(sql, args.toTypedArray())
         return goodsItemDao.query(query)
+    }
+
+    // 将 UI 的排序字段映射为数据库实际字段
+    private fun mapSortFieldToDb(uiField: String?): String {
+        return when (uiField) {
+            "创建时间" -> "createDate"
+            "购入时间" -> "buyDate"
+            "退役时间" -> "retireDate"
+            "价格" -> "price"
+            else -> "buyDate" // 默认排序字段
+        }
     }
 
     // 内部数据类，用于传递搜索参数

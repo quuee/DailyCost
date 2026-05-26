@@ -13,10 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -78,7 +75,6 @@ class CategoryVM(
                     )
                 }
             }
-
             is CategoryIntent.Load -> load()
             is CategoryIntent.CreateCategory -> createCategory(intent.category)
             is CategoryIntent.DeleteCategory -> deleteCategory(intent.category)
