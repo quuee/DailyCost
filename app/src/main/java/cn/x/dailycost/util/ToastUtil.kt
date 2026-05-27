@@ -13,8 +13,6 @@ import com.hjq.toast.style.WhiteToastStyle
 /**
  * Toast 工具类，基于 Toaster 框架封装
  * 提供基本的 Toast 显示和特定样式（成功、失败、警告）
- *
- * @author Joker.X
  */
 object ToastUtil {
 
@@ -25,11 +23,10 @@ object ToastUtil {
 
     /**
      * 初始化 Toast，应在 Application 中调用
-     * 用法示例：ToastUtils.init(application, isDarkTheme)
+     * 用法示例：ToastUtil.init(application, isDarkTheme)
      *
      * @param application Application 对象
      * @param isDarkTheme 是否为深色主题，用于选择默认样式
-     * @author Joker.X
      */
     fun init(application: Application, isDarkTheme: Boolean = false) {
         // 保存当前主题模式
@@ -44,7 +41,6 @@ object ToastUtil {
      * 设置为黑色样式
      * 用法示例：ToastUtils.setBlackStyle()
      *
-     * @author Joker.X
      */
     fun setBlackStyle() {
         isDarkMode = false
@@ -55,7 +51,6 @@ object ToastUtil {
      * 设置为白色样式
      * 用法示例：ToastUtils.setWhiteStyle()
      *
-     * @author Joker.X
      */
     fun setWhiteStyle() {
         isDarkMode = true
@@ -67,7 +62,6 @@ object ToastUtil {
      * 用法示例：ToastUtils.show("这是普通提示")
      *
      * @param text 文本内容
-     * @author Joker.X
      */
     fun show(text: CharSequence) {
         Toaster.show(text)
@@ -78,7 +72,6 @@ object ToastUtil {
      * 用法示例：ToastUtils.show(R.string.message)
      *
      * @param resId 字符串资源ID
-     * @author Joker.X
      */
     fun show(@StringRes resId: Int) {
         Toaster.show(resId)
@@ -89,11 +82,11 @@ object ToastUtil {
      * 用法示例：ToastUtils.showSuccess("操作成功")
      *
      * @param text 文本内容
-     * @author Joker.X
      */
     fun showSuccess(text: CharSequence) {
         val params = ToastParams()
         params.text = text
+        // 自定义布局
         params.style = CustomToastStyle(R.layout.toast_success)
         Toaster.show(params)
     }
@@ -104,7 +97,6 @@ object ToastUtil {
      *
      * @param context 上下文
      * @param resId 字符串资源ID
-     * @author Joker.X
      */
     fun showSuccess(context: Context, @StringRes resId: Int) {
         val text = context.getString(resId)
@@ -117,7 +109,6 @@ object ToastUtil {
      * 用法示例：ToastUtils.showSuccess(R.string.success_message)
      *
      * @param resId 字符串资源ID
-     * @author Joker.X
      */
     fun showSuccess(@StringRes resId: Int) {
         // 保存当前样式
@@ -136,11 +127,11 @@ object ToastUtil {
      * 用法示例：ToastUtils.showError("操作失败")
      *
      * @param text 文本内容
-     * @author Joker.X
      */
     fun showError(text: CharSequence) {
         val params = ToastParams()
         params.text = text
+        // 自定义布局
         params.style = CustomToastStyle(R.layout.toast_error)
         Toaster.show(params)
     }
@@ -151,7 +142,6 @@ object ToastUtil {
      *
      * @param context 上下文
      * @param resId 字符串资源ID
-     * @author Joker.X
      */
     fun showError(context: Context, @StringRes resId: Int) {
         val text = context.getString(resId)
@@ -164,7 +154,6 @@ object ToastUtil {
      * 用法示例：ToastUtils.showError(R.string.error_message)
      *
      * @param resId 字符串资源ID
-     * @author Joker.X
      */
     fun showError(@StringRes resId: Int) {
         // 保存当前样式
@@ -183,7 +172,6 @@ object ToastUtil {
      * 用法示例：ToastUtils.showWarning("请注意")
      *
      * @param text 文本内容
-     * @author Joker.X
      */
     fun showWarning(text: CharSequence) {
         val params = ToastParams()
@@ -198,7 +186,6 @@ object ToastUtil {
      *
      * @param context 上下文
      * @param resId 字符串资源ID
-     * @author Joker.X
      */
     fun showWarning(context: Context, @StringRes resId: Int) {
         val text = context.getString(resId)
@@ -211,7 +198,6 @@ object ToastUtil {
      * 用法示例：ToastUtils.showWarning(R.string.warning_message)
      *
      * @param resId 字符串资源ID
-     * @author Joker.X
      */
     fun showWarning(@StringRes resId: Int) {
         // 保存当前样式
