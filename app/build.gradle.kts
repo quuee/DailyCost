@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 
-//    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
 
@@ -67,7 +67,7 @@ dependencies {
 
 
     // Navigation3
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.bundles.navigation3)
 
     // Koin DI
     implementation(libs.bundles.koin)
@@ -83,7 +83,7 @@ dependencies {
     implementation(libs.bundles.coroutines)
 
     // Serialization
-    //    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.json)
 
     // Coil 图片加载
     implementation(libs.coil.compose)

@@ -37,9 +37,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.GoodsItemEntity
-import cn.x.dailycost.route.Routes
+import cn.x.dailycost.route.LocalNavigator
 import cn.x.dailycost.ui.components.AppIcons
 import cn.x.dailycost.ui.components.SearchBar
 import cn.x.dailycost.ui.components.SortDropdownButton
@@ -58,8 +57,9 @@ import java.time.Instant
 fun HoldScreen(
     goodsVM: GoodsVM = koinViewModel(),
     categoryVM: CategoryVM = koinViewModel(),
-    navController: NavController
+
 ) {
+    val navigator = LocalNavigator.current
     val goodsState by goodsVM.state.collectAsState()
     val categoryState by categoryVM.state.collectAsState()
 
@@ -132,7 +132,7 @@ fun HoldScreen(
                 GoodsItem(
                     goods,
                     bgColor = categoryState.categoryMap[goods.cid]?.color ?: Color(0XFFF8F1E4).toArgb(),
-                    onToggle = { navController.navigate(Routes.Goods.route + "/${it}") })
+                    onToggle = { navigator.navigateToGoods(it) })
             }
         }
 

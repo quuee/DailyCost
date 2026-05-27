@@ -73,7 +73,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
-import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.CategoryEntity
 import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.ui.components.AppIcons
@@ -98,7 +97,7 @@ import java.time.format.DateTimeFormatter
 fun GoodsScreen(
     goodsVM: GoodsVM = koinViewModel(),
     categoryVM: CategoryVM = koinViewModel(),
-    navController: NavController,
+    onBack: ()->Unit,
     gid: Long?,
 ) {
 
@@ -145,7 +144,7 @@ fun GoodsScreen(
                     ToastUtil.show(effect.message)
                 }
                 is GoodsEffect.NavigateToHome -> {
-                    navController.popBackStack()
+                    onBack()
                 }
             }
         }
@@ -163,7 +162,7 @@ fun GoodsScreen(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         modifier = Modifier.clickable(onClick = {
-                            navController.popBackStack()
+                            onBack()
                         })
                     )
                 },

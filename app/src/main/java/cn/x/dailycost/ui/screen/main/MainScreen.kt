@@ -43,24 +43,23 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import cn.x.dailycost.route.Routes
+import cn.x.dailycost.route.LocalNavigator
 import cn.x.dailycost.ui.screen.hold.HoldScreen
 import cn.x.dailycost.ui.screen.my.MyScreen
 
 
 @Composable
 fun MainScreen(
-    navController: NavController,
 ) {
 
+    val navigator = LocalNavigator.current
     // 用于记录选中的底部导航项
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
         bottomBar = {
             BottomBar(
-                navController = navController,
+                onNavigateToGoods = { navigator.navigateToGoods(it) },
                 selectedItem = selectedItem,
                 onItemSelected = { newIndex ->
                     selectedItem = newIndex
@@ -76,8 +75,8 @@ fun MainScreen(
 
             ) {
             when (selectedItem) {
-                0 -> HoldScreen(navController = navController)
-                1 -> MyScreen(navController)
+                0 -> HoldScreen()
+                1 -> MyScreen()
             }
         }
     }
@@ -88,7 +87,7 @@ fun MainScreen(
 private fun BottomBar(
     selectedItem: Int,
     onItemSelected: (Int) -> Unit,
-    navController: NavController
+    onNavigateToGoods: (Long) -> Unit
 ) {
 
     // 按钮的半径（建议根据实际 UI 调整）
@@ -146,7 +145,7 @@ private fun BottomBar(
 
         // 3. 添加突出的悬浮按钮 (叠加在凹槽上方)
         FloatingActionButton(
-            onClick = { navController.navigate(Routes.Goods.route.plus("/0")) },
+            onClick = { onNavigateToGoods(0L) },
             modifier = Modifier
                 .size(bottomBarHeight)
                 .align(Alignment.BottomCenter) // 居中于父布局底部

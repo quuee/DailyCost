@@ -1,19 +1,24 @@
 package cn.x.dailycost.route
 
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 
 
-sealed class Routes(val route: String)  {
+sealed class Routes {
 
     // 主界面 bottomBar
-    data object Main : Routes("main")
+    @Serializable
+    data object Main : NavKey
 
+    @Serializable
+    data class Goods(val itemId: Long) : NavKey
 
-    data object Goods : Routes("goods")
+    @Serializable
+    data object DataSync : NavKey
 
+    @Serializable
+    data object CategoryManager : NavKey
 
-    data object DataSync : Routes("dataSync")
-
-    data object CategoryManager : Routes("categoryManager")
-
-    data object Demo : Routes("demo")
+    @Serializable
+    data object Demo : NavKey
 }

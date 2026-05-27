@@ -1,3 +1,16 @@
+# 版本更新说明
+# 1. 更新 Kotlin 版本时，需要同时更新 KSP 版本
+# 2. 更新 Hilt(koin) 版本时，需要检查与 Kotlin 版本的兼容性
+# 3. 更新 Compose BOM 时，所有 Compose 相关库版本会自动更新
+# 4. 更新 Room 版本时，确保所有 Room 相关库使用相同版本
+# 5. 更新网络库时，确保 OkHttp、Retrofit 版本兼容
+#
+# 官方版本兼容性参考：
+# - Compose Compiler 兼容性: https://developer.android.com/jetpack/androidx/releases/compose-kotlin
+# - KSP 兼容性: https://github.com/google/ksp/releases
+# - Hilt 兼容性: https://developer.android.com/jetpack/androidx/releases/hilt
+# - koin
+
 [versions]
 # Build
 agp = "9.1.1"
@@ -13,9 +26,7 @@ compose-activity = "1.13.0"
 compose-lifecycle-runtimeKtx = "2.10.0"
 
 
-# Navigation2
-navigation-compose = "2.9.8"
-# todo Navigation3
+# Navigation3
 navigation3 = "1.1.2"
 
 # Koin (依赖注入 4.x)
@@ -115,7 +126,7 @@ androidx-compose-material-icons-extended = { module = "androidx.compose.material
 
 
 # 导航
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+# androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 # 新导航
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
@@ -207,4 +218,9 @@ room = [
 coroutines = [
     "kotlinx-coroutines-core",
     "kotlinx-coroutines-android"
+]
+navigation3=[
+    "androidx-navigation3-ui",
+    "androidx-navigation3-runtime",
+    "androidx-lifecycle-viewmodel-navigation3",
 ]

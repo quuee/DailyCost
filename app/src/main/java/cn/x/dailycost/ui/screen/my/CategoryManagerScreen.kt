@@ -57,8 +57,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.navigation.NavController
 import cn.x.dailycost.data.entity.CategoryEntity
+import cn.x.dailycost.route.LocalNavigator
 import cn.x.dailycost.ui.components.CustomizableBottomSheet
 import cn.x.dailycost.ui.viewmodel.CategoryIntent
 import cn.x.dailycost.ui.viewmodel.CategoryVM
@@ -70,8 +70,9 @@ import kotlin.math.roundToInt
 @Composable
 fun CategoryManagerScreen(
     categoryVM: CategoryVM = koinViewModel(),
-    navController: NavController
 ) {
+    val navigator = LocalNavigator.current
+
     val state by categoryVM.state.collectAsState()
     val draggingOffset by categoryVM.draggingOffset.collectAsState()
     val draggingIndex by categoryVM.draggingIndex.collectAsState()
@@ -89,7 +90,7 @@ fun CategoryManagerScreen(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         modifier = Modifier.clickable(onClick = {
-                            navController.popBackStack()
+                            navigator.popBack()
                         })
                     )
                 },

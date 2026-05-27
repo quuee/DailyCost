@@ -17,6 +17,7 @@ class DailyCostApplication : Application() {
 
         SPUtil.init(this)
         ToastUtil.init(this)
+
         // 初始化 Koin DI
         startKoin {
             androidLogger(Level.DEBUG)
