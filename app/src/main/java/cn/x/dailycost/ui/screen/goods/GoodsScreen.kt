@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -97,7 +98,7 @@ import java.time.format.DateTimeFormatter
 fun GoodsScreen(
     goodsVM: GoodsVM = koinViewModel(),
     categoryVM: CategoryVM = koinViewModel(),
-    onBack: ()->Unit,
+    onBack: () -> Unit,
     gid: Long?,
 ) {
 
@@ -105,8 +106,6 @@ fun GoodsScreen(
     val goods = goodsState.goodsFormData
 
     val categoryState by categoryVM.state.collectAsState()
-
-//    val context = LocalContext.current
 
     //分类
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
@@ -133,7 +132,7 @@ fun GoodsScreen(
         if (gid != null && gid > 0L) {
             // 获取物品数据
             goodsVM.processIntent(GoodsIntent.ToggleGoods(gid))
-        }else{
+        } else {
             goodsVM.processIntent(GoodsIntent.ClearGoodsFormData)
         }
     }
@@ -142,9 +141,9 @@ fun GoodsScreen(
         goodsVM.effect.collect { effect ->
             when (effect) {
                 is GoodsEffect.ShowMessage -> {
-//                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                     ToastUtil.show(effect.message)
                 }
+
                 is GoodsEffect.NavigateToHome -> {
                     onBack()
                 }
@@ -539,7 +538,6 @@ fun GoodsScreen(
             CategorySheet(
                 categories = categoryState.categories,
                 onSelect = {
-//                    selectedCategory = it
                     goodsVM.processIntent(
                         GoodsIntent.ChangeGoodsAttr(
                             cid = it.cid,
@@ -656,7 +654,9 @@ fun GoodsScreen(
         goodsState.error?.let { errorMsg ->
             Dialog(onDismissRequest = { goodsVM.processIntent(GoodsIntent.ErrorDismissed) }) {
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(32.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp)
                 ) {
                     Column() {
                         Text("Warn")
@@ -691,6 +691,7 @@ private fun CategorySheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(max=(LocalConfiguration.current.screenHeightDp / 5 * 3).dp)
             .padding(4.dp)
     ) {
         Text(
@@ -700,43 +701,46 @@ private fun CategorySheet(
             textAlign = TextAlign.Center
         )
         HorizontalDivider()
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+        Box(
             modifier = Modifier
-                .fillMaxWidth(),
-//                .heightIn(max = (LocalWindowInfo.current.containerSize.height).dp),
-            contentPadding = PaddingValues(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .fillMaxWidth()
+//                .weight(1f) // 在 ColumnScope 中合法使用
         ) {
-            items(categories) { category ->
-                Surface(
-                    modifier = Modifier
-//                        .background(color = Color(category.color))
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable {
-                            selectedCategory = category
-                            onSelect(selectedCategory)
-                        },
-                    color = Color(category.color)
-                ) {
-                    Text(
-                        text = category.name,
-                        fontSize = 14.sp,
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories) { category ->
+                    Surface(
                         modifier = Modifier
+//                        .background(color = Color(category.color))
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
-                        color = if (category == selectedCategory)
-                            MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center
-                    )
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                selectedCategory = category
+                                onSelect(selectedCategory)
+                            },
+                        color = Color(category.color)
+                    ) {
+                        Text(
+                            text = category.name,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            color = if (category == selectedCategory)
+                                MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         // 自定义按钮
         Button(
@@ -777,7 +781,7 @@ private fun CategoryIconsSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height((LocalConfiguration.current.screenHeightDp / 4 * 3).dp)
+            .height((LocalConfiguration.current.screenHeightDp / 5 * 3).dp)
             .padding(4.dp)
     ) {
         // 3. 顶部 Tab 栏
@@ -812,18 +816,25 @@ private fun CategoryIconsSheet(
             }
         }
         HorizontalDivider()
-        // 4. 根据索引切换下方的页面内容
-        when (selectedTabIndex) {
-            0 -> IconContent(iconInt, onSelectIcon, AppIcons.allIcons)
-            1 -> IconContent(iconInt, onSelectIcon, AppIcons.digitalIcons)
-            2 -> IconContent(iconInt, onSelectIcon, AppIcons.beautyProductsIcons)
-            3 -> IconContent(iconInt, onSelectIcon, AppIcons.clothesPantsShoesHatsIcons)
-            4 -> IconContent(iconInt, onSelectIcon, AppIcons.homeAppliances)
-            5 -> IconContent(iconInt, onSelectIcon, AppIcons.outdoorSports)
-            6 -> IconContent(iconInt, onSelectIcon, AppIcons.toolIcons)
-            7 -> IconContent(iconInt, onSelectIcon, AppIcons.instrumentIcons)
-            8 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
-            9 -> IconContent(iconInt, onSelectIcon, AppIcons.otherIcons)
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // 在 ColumnScope 中合法使用
+        ) {
+            // 4. 根据索引切换下方的页面内容
+            when (selectedTabIndex) {
+                0 -> IconContent(iconInt, onSelectIcon, AppIcons.allIcons)
+                1 -> IconContent(iconInt, onSelectIcon, AppIcons.digitalIcons)
+                2 -> IconContent(iconInt, onSelectIcon, AppIcons.beautyProductsIcons)
+                3 -> IconContent(iconInt, onSelectIcon, AppIcons.clothesPantsShoesHatsIcons)
+                4 -> IconContent(iconInt, onSelectIcon, AppIcons.homeAppliances)
+                5 -> IconContent(iconInt, onSelectIcon, AppIcons.outdoorSports)
+                6 -> IconContent(iconInt, onSelectIcon, AppIcons.toolIcons)
+                7 -> IconContent(iconInt, onSelectIcon, AppIcons.instrumentIcons)
+                8 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
+                9 -> IconContent(iconInt, onSelectIcon, AppIcons.otherIcons)
+            }
         }
 
         Button(
@@ -853,15 +864,16 @@ private fun IconContent(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(categoryIcons) { iconItem ->
+        items(categoryIcons, key = { it.resInt }) { iconItem ->
+            val isSelected = iconInt == iconItem.resInt
             Column(
                 modifier = Modifier
                     // 添加内边距，让边框和图标之间有间隙
                     .padding(4.dp)
                     // 根据 isSelected 状态动态设置边框
                     .border(
-                        width = if (iconInt == iconItem.resInt) 1.dp else 0.dp,
-                        color = if (iconInt == iconItem.resInt) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        width = if (isSelected) 1.dp else 0.dp,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                         shape = RoundedCornerShape(8.dp) // 可选：添加圆角
                     )
                     // 添加点击事件
@@ -886,6 +898,6 @@ private fun IconContent(
 @Preview
 @Composable
 fun APPFF() {
-//    GoodsScreen()
-//    CategoryIconsSheet(onSelect = {}, onClose = {})
+//    CategorySheet()
+//    CategoryIconsSheet(iconInt = null, onSelectIcon = {}, onClose = {})
 }
