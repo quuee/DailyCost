@@ -61,6 +61,7 @@ object AppIcons {
         IconItem("智能手环", R.drawable.ic_zhinengshouhuan),
         IconItem("转换线", R.drawable.ic_zhuanhuanxian),
         IconItem("显示器", R.drawable.ic_xianshiqi),
+        IconItem("显示器支架", R.drawable.ic_xianshiqizhijia),
     )
 
     // 护肤美妆
@@ -107,7 +108,6 @@ object AppIcons {
         IconItem("长袖", R.drawable.ic_changxiu),
         IconItem("衬衫", R.drawable.ic_chenshan),
         IconItem("短裤", R.drawable.ic_duanku),
-        IconItem("耳环", R.drawable.ic_erhuan),
         IconItem("风衣", R.drawable.ic_fengyi),
         IconItem("腰带", R.drawable.ic_fuzhuang_yaodai),
         IconItem("高跟鞋", R.drawable.ic_gaogenxie),
@@ -122,13 +122,10 @@ object AppIcons {
         IconItem("帽子", R.drawable.ic_maozi),
         IconItem("墨镜", R.drawable.ic_mojing),
         IconItem("内衣裤", R.drawable.ic_neiyiku),
-        IconItem("尿不湿", R.drawable.ic_niaobushi),
         IconItem("皮鞋", R.drawable.ic_pixie),
         IconItem("钱包", R.drawable.ic_qianbao),
         IconItem("旗袍", R.drawable.ic_qipao),
         IconItem("热裤", R.drawable.ic_reku),
-        IconItem("手表", R.drawable.ic_shoubiao1),
-        IconItem("首饰", R.drawable.ic_shoushi),
         IconItem("双肩包", R.drawable.ic_shuangjianbao),
         IconItem("睡衣", R.drawable.ic_shuiyi),
         IconItem("套装", R.drawable.ic_taozhuang),
@@ -136,7 +133,6 @@ object AppIcons {
         IconItem("袜子", R.drawable.ic_wazi),
         IconItem("围巾", R.drawable.ic_weijin),
         IconItem("卫衣", R.drawable.ic_weiyi),
-        IconItem("项链", R.drawable.ic_xianglian),
         IconItem("鞋子", R.drawable.ic_xiezi),
         IconItem("休闲裤", R.drawable.ic_xiuxianku),
         IconItem("西装", R.drawable.ic_xizhuang),
@@ -144,6 +140,14 @@ object AppIcons {
         IconItem("泳裤", R.drawable.ic_yongku),
         IconItem("瑜伽服", R.drawable.ic_yujiafu),
         IconItem("运动鞋", R.drawable.ic_yundongxie),
+    )
+
+    // 首饰
+    val jewelryIcons: List<IconItem> = listOf(
+        IconItem("首饰", R.drawable.ic_shoushi),
+        IconItem("耳环", R.drawable.ic_erhuan),
+        IconItem("项链", R.drawable.ic_xianglian),
+        IconItem("手表", R.drawable.ic_shoubiao1),
     )
 
 
@@ -157,8 +161,6 @@ object AppIcons {
         IconItem("衣柜", R.drawable.ic_yigui),
         IconItem("椅子", R.drawable.ic_yizi),
         IconItem("鱼缸", R.drawable.ic_yugang),
-        IconItem("显示器支架", R.drawable.ic_xianshiqizhijia),
-
         IconItem("餐具", R.drawable.ic_canju),
         IconItem("厨具", R.drawable.ic_chuju),
         IconItem("刀具", R.drawable.ic_daoju),
@@ -185,29 +187,6 @@ object AppIcons {
         IconItem("圆号", R.drawable.ic_yuanhao),
     )
 
-    // 工具
-    val toolIcons: List<IconItem> = listOf(
-        IconItem("铲子", R.drawable.ic_chanzi),
-        IconItem("插排", R.drawable.ic_chapai),
-        IconItem("插座", R.drawable.ic_chazuo),
-        IconItem("称", R.drawable.ic_cheng),
-        IconItem("充电器", R.drawable.ic_chongdianqi),
-        IconItem("电池", R.drawable.ic_dianchi),
-        IconItem("钉耙", R.drawable.ic_dingpa),
-        IconItem("工具", R.drawable.ic_gongju),
-        IconItem("剪刀", R.drawable.ic_jiandao),
-        IconItem("脸盆", R.drawable.ic_lianpeng),
-        IconItem("毛巾", R.drawable.ic_maojin),
-        IconItem("喷壶", R.drawable.ic_penhu),
-        IconItem("清洁", R.drawable.ic_qingjiyongpin),
-        IconItem("三脚架", R.drawable.ic_sanjiaojia),
-        IconItem("手电筒", R.drawable.ic_shoudiantong),
-        IconItem("手套", R.drawable.ic_shoutao),
-        IconItem("水壶", R.drawable.ic_shuihu),
-        IconItem("水桶", R.drawable.ic_shuitong),
-        IconItem("头盔", R.drawable.ic_toukui),
-
-    )
 
     // 家用电器
     val homeAppliances: List<IconItem> = listOf(
@@ -245,7 +224,7 @@ object AppIcons {
         IconItem("蒸锅", R.drawable.ic_zhengguo),
         IconItem("智能门锁", R.drawable.ic_zhinengmensuo),
 
-    )
+        )
 
     // 户外运动
     val outdoorSports: List<IconItem> = listOf(
@@ -267,25 +246,19 @@ object AppIcons {
         IconItem("帐篷", R.drawable.ic_zhangpeng),
         IconItem("足球", R.drawable.ic_zuqiu),
 
-    )
+        )
 
-
-    val otherIcons: List<IconItem> = listOf(
+    // 日常生活
+    val dailyIcons: List<IconItem> = listOf(
         IconItem("摩托车", R.drawable.ic_motuoche),
         IconItem("电动车", R.drawable.ic_diandongche),
         IconItem("自行车", R.drawable.ic_zihangche),
         IconItem("汽车", R.drawable.ic_qiche),
-        IconItem("宠物用品", R.drawable.ic_chongwuyongpin),
-        IconItem("狗粮", R.drawable.ic_gouliang),
         IconItem("房产", R.drawable.ic_fangchang),
-        IconItem("罐头", R.drawable.ic_guantou),
         IconItem("行李箱", R.drawable.ic_hanglixiang),
         IconItem("刮胡刀", R.drawable.ic_guahudao),
         IconItem("会员卡", R.drawable.ic_huiyuanka),
         IconItem("礼物", R.drawable.ic_liwu),
-        IconItem("猫粮", R.drawable.ic_maoliang),
-        IconItem("母婴", R.drawable.ic_muying),
-        IconItem("奶瓶", R.drawable.ic_naiping),
         IconItem("卫生纸", R.drawable.ic_paper),
         IconItem("盆栽", R.drawable.ic_penzai),
         IconItem("PPR软管", R.drawable.ic_pprruanguan),
@@ -299,13 +272,55 @@ object AppIcons {
         IconItem("文具", R.drawable.ic_wenju),
         IconItem("药品", R.drawable.ic_yaopin),
         IconItem("牙刷", R.drawable.ic_yashua),
+        IconItem("雨伞", R.drawable.ic_yusan),
+        IconItem("水杯", R.drawable.ic_shuibei),
+
+        IconItem("铲子", R.drawable.ic_chanzi),
+        IconItem("插排", R.drawable.ic_chapai),
+        IconItem("插座", R.drawable.ic_chazuo),
+        IconItem("称", R.drawable.ic_cheng),
+        IconItem("充电器", R.drawable.ic_chongdianqi),
+        IconItem("电池", R.drawable.ic_dianchi),
+        IconItem("钉耙", R.drawable.ic_dingpa),
+        IconItem("工具", R.drawable.ic_gongju),
+        IconItem("剪刀", R.drawable.ic_jiandao),
+        IconItem("脸盆", R.drawable.ic_lianpeng),
+        IconItem("毛巾", R.drawable.ic_maojin),
+        IconItem("喷壶", R.drawable.ic_penhu),
+        IconItem("清洁", R.drawable.ic_qingjiyongpin),
+        IconItem("三脚架", R.drawable.ic_sanjiaojia),
+        IconItem("手电筒", R.drawable.ic_shoudiantong),
+        IconItem("手套", R.drawable.ic_shoutao),
+        IconItem("水壶", R.drawable.ic_shuihu),
+        IconItem("水桶", R.drawable.ic_shuitong),
+        IconItem("头盔", R.drawable.ic_toukui),
+    )
+
+    val catIcons: List<IconItem> = listOf(
+        IconItem("宠物用品", R.drawable.ic_chongwuyongpin),
+        IconItem("狗粮", R.drawable.ic_gouliang),
+        IconItem("罐头", R.drawable.ic_guantou),
+        IconItem("猫粮", R.drawable.ic_maoliang),
+    )
+
+    val childIcons: List<IconItem> = listOf(
+        IconItem("母婴", R.drawable.ic_muying),
+        IconItem("奶瓶", R.drawable.ic_naiping),
         IconItem("婴儿车", R.drawable.ic_yingerche),
         IconItem("婴儿床", R.drawable.ic_yingerchuang),
-        IconItem("雨伞", R.drawable.ic_yusan),
+        IconItem("尿不湿", R.drawable.ic_niaobushi),
     )
 
     val allIcons: List<IconItem> =
-        digitalIcons + beautyProductsIcons + clothesPantsShoesHatsIcons +
-                 furnitureIcons + instrumentIcons + toolIcons + homeAppliances +
-                outdoorSports + otherIcons
+            digitalIcons +
+            beautyProductsIcons +
+            clothesPantsShoesHatsIcons +
+            furnitureIcons +
+            homeAppliances +
+            outdoorSports +
+            instrumentIcons +
+            dailyIcons +
+            catIcons +
+            childIcons +
+            jewelryIcons
 }

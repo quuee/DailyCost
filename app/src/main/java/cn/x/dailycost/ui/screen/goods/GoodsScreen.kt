@@ -769,13 +769,15 @@ private fun CategoryIconsSheet(
         "全部分类",
         "电子数码",
         "护肤美妆",
-        "衣裤鞋帽首饰",
+        "衣裤鞋帽",
+        "家具餐具",
         "家用电器",
         "户外运动",
-        "日常工具",
         "乐器",
-        "家具",
-        "其他",
+        "日常用品",
+        "宠物",
+        "母婴",
+        "首饰",
     )
     val tabScrollState = rememberScrollState()
     Column(
@@ -828,12 +830,14 @@ private fun CategoryIconsSheet(
                 1 -> IconContent(iconInt, onSelectIcon, AppIcons.digitalIcons)
                 2 -> IconContent(iconInt, onSelectIcon, AppIcons.beautyProductsIcons)
                 3 -> IconContent(iconInt, onSelectIcon, AppIcons.clothesPantsShoesHatsIcons)
-                4 -> IconContent(iconInt, onSelectIcon, AppIcons.homeAppliances)
-                5 -> IconContent(iconInt, onSelectIcon, AppIcons.outdoorSports)
-                6 -> IconContent(iconInt, onSelectIcon, AppIcons.toolIcons)
+                4 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
+                5 -> IconContent(iconInt, onSelectIcon, AppIcons.homeAppliances)
+                6 -> IconContent(iconInt, onSelectIcon, AppIcons.outdoorSports)
                 7 -> IconContent(iconInt, onSelectIcon, AppIcons.instrumentIcons)
-                8 -> IconContent(iconInt, onSelectIcon, AppIcons.furnitureIcons)
-                9 -> IconContent(iconInt, onSelectIcon, AppIcons.otherIcons)
+                8 -> IconContent(iconInt, onSelectIcon, AppIcons.dailyIcons)
+                9 -> IconContent(iconInt, onSelectIcon, AppIcons.catIcons)
+                10 -> IconContent(iconInt, onSelectIcon, AppIcons.childIcons)
+                11 -> IconContent(iconInt, onSelectIcon, AppIcons.jewelryIcons)
             }
         }
 
