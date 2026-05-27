@@ -133,6 +133,8 @@ fun GoodsScreen(
         if (gid != null && gid > 0L) {
             // 获取物品数据
             goodsVM.processIntent(GoodsIntent.ToggleGoods(gid))
+        }else{
+            goodsVM.processIntent(GoodsIntent.ClearGoodsFormData)
         }
     }
 

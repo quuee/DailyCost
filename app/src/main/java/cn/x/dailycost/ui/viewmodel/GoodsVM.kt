@@ -56,8 +56,9 @@ data class GoodsState(
 
 // Intent - 用户操作
 sealed class GoodsIntent : MviIntent {
-//    data object SyncRemote : GoodsIntent()
+    //    data object SyncRemote : GoodsIntent()
     data object ErrorDismissed : GoodsIntent()
+    data object ClearGoodsFormData : GoodsIntent()
     data class ToggleGoods(val gid: Long) : GoodsIntent()
     data class CreateGoods(val goodsItem: GoodsItemEntity) : GoodsIntent()
     data class DeleteGoods(val goodsItem: GoodsItemEntity) : GoodsIntent()
@@ -165,6 +166,22 @@ class GoodsVM(
                 setState {
                     copy(
                         error = null,
+                    )
+                }
+            }
+
+            is GoodsIntent.ClearGoodsFormData -> {
+                setState {
+                    copy(
+                        goodsFormData = GoodsItemEntity(
+                            gid = 0L,
+                            goodsName = "",
+                            price = 0.0,
+                            cid = 0L,
+                            iconInt = R.drawable.ic_package,
+                            remark = "",
+                            realPictureUri = ""
+                        ),
                     )
                 }
             }
