@@ -30,11 +30,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -652,22 +654,71 @@ fun GoodsScreen(
         }
 
         goodsState.error?.let { errorMsg ->
-            Dialog(onDismissRequest = { goodsVM.processIntent(GoodsIntent.ErrorDismissed) }) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp)
-                ) {
-                    Column() {
-                        Text("Warn")
-                        Text(errorMsg)
-                    }
-                }
-
-
-            }
+            DialogMessageWarn(
+                onDismissRequest = { goodsVM.processIntent(GoodsIntent.ErrorDismissed) },
+                message = errorMsg
+            )
         }
 
+    }
+}
+
+@Composable
+private fun DialogMessageWarn(
+    onDismissRequest: () -> Unit,
+    message: String
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp), // M3 标准大圆角
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp), // 关键：内部呼吸感
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 1. 语义化图标
+                Icon(
+                    imageVector = Icons.Outlined.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(48.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 2. 标题层级
+                Text(
+                    text = "操作失败",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 3. 内容描述
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+//                    lineHeight = 24.sp
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // 4. 显式操作按钮
+                FilledTonalButton(
+                    onClick = onDismissRequest,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("我知道了")
+                }
+            }
+        }
     }
 }
 
@@ -691,7 +742,7 @@ private fun CategorySheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max=(LocalConfiguration.current.screenHeightDp / 5 * 3).dp)
+            .heightIn(max = (LocalConfiguration.current.screenHeightDp / 5 * 3).dp)
             .padding(4.dp)
     ) {
         Text(
