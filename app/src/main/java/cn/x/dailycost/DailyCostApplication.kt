@@ -4,6 +4,7 @@ import android.app.Application
 import cn.x.dailycost.di.databaseModule
 import cn.x.dailycost.di.viewModelModule
 import cn.x.dailycost.util.SPUtil
+import cn.x.dailycost.util.ToastUtil
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -15,6 +16,7 @@ class DailyCostApplication : Application() {
         super.onCreate()
 
         SPUtil.init(this)
+        ToastUtil.init(this)
         // 初始化 Koin DI
         startKoin {
             androidLogger(Level.DEBUG)

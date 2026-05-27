@@ -2,7 +2,6 @@ package cn.x.dailycost.ui.screen.goods
 
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -63,7 +62,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -87,6 +85,7 @@ import cn.x.dailycost.ui.viewmodel.CategoryVM
 import cn.x.dailycost.ui.viewmodel.GoodsEffect
 import cn.x.dailycost.ui.viewmodel.GoodsIntent
 import cn.x.dailycost.ui.viewmodel.GoodsVM
+import cn.x.dailycost.util.ToastUtil
 import cn.x.dailycost.util.formatTimestamp
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
@@ -108,7 +107,7 @@ fun GoodsScreen(
 
     val categoryState by categoryVM.state.collectAsState()
 
-    val context = LocalContext.current
+//    val context = LocalContext.current
 
     //分类
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
@@ -142,7 +141,8 @@ fun GoodsScreen(
         goodsVM.effect.collect { effect ->
             when (effect) {
                 is GoodsEffect.ShowMessage -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                    ToastUtil.show(effect.message)
                 }
                 is GoodsEffect.NavigateToHome -> {
                     navController.popBackStack()
