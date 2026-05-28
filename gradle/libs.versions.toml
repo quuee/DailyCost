@@ -124,13 +124,10 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 
-
-# 导航
-# androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
-# 新导航
+## 导航3
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
-androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version="2.10.0" }
+androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version = "2.10.0" }
 
 
 # Koin
@@ -219,7 +216,7 @@ coroutines = [
     "kotlinx-coroutines-core",
     "kotlinx-coroutines-android"
 ]
-navigation3=[
+navigation3 = [
     "androidx-navigation3-ui",
     "androidx-navigation3-runtime",
     "androidx-lifecycle-viewmodel-navigation3",

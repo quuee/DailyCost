@@ -1,7 +1,10 @@
 package cn.x.dailycost.ui.viewmodel
 
 
+import android.net.Uri
+import android.os.Environment
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import androidx.sqlite.db.SimpleSQLiteQuery
 import cn.x.dailycost.base.MviEffect
@@ -12,16 +15,23 @@ import cn.x.dailycost.R
 import cn.x.dailycost.data.dao.GoodsItemDao
 import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.util.getDaysDifference
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.io.File
+import java.text.SimpleDateFormat
 import java.time.Instant
+import java.util.Date
+import java.util.Locale
 
 // State - UI 状态
 data class GoodsState(
@@ -83,6 +93,7 @@ sealed class GoodsIntent : MviIntent {
         val sortOrder: Int?
     ) : GoodsIntent()
 
+    data class ImportData(val goods: List<GoodsItemEntity>) : GoodsIntent()
 }
 
 // Effect：一次性事件
@@ -232,7 +243,7 @@ class GoodsVM(
                     )
                 )
             }
-
+            is GoodsIntent.ImportData -> importData(intent.goods)
         }
     }
 
@@ -247,6 +258,13 @@ class GoodsVM(
         goodsItemDao.update(goodsItem)
         sendEffect(GoodsEffect.ShowMessage("修改成功"))
         sendEffect(GoodsEffect.NavigateToHome)
+    }
+
+    private fun importData(goods: List<GoodsItemEntity>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            goodsItemDao.insertAll(goods)
+            sendEffect(GoodsEffect.ShowMessage("导入完成"))
+        }
     }
 
     private fun changeGoodsAttr(

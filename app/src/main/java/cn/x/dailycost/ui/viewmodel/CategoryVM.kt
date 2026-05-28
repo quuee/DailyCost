@@ -211,20 +211,22 @@ class CategoryVM(
         }
     }
 
-    private fun finishDrag() {
-
+    private suspend fun finishDrag() {
         draggingIndex.value = -1
         draggingOffset.update { Offset.Zero }
 
-        viewModelScope.launch {
-            val updatedList = currentState().categories.mapIndexed { index, item ->
-                item.copy(sort = index)
-            }
-
-            withContext(Dispatchers.IO) {
-                categoryDao.updateAll(updatedList)
-            }
+        val updatedList = currentState().categories.mapIndexed { index, item ->
+            item.copy(sort = index)
         }
+        categoryDao.updateAll(updatedList)
+//        viewModelScope.launch {
+//            val updatedList = currentState().categories.mapIndexed { index, item ->
+//                item.copy(sort = index)
+//            }
+//            withContext(Dispatchers.IO) {
+//                categoryDao.updateAll(updatedList)
+//            }
+//        }
     }
 
 }

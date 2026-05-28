@@ -1,5 +1,7 @@
 package cn.x.dailycost.ui.screen.my
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,19 +18,88 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cn.x.dailycost.data.entity.GoodsItemEntity
 import cn.x.dailycost.route.LocalNavigator
 import cn.x.dailycost.route.Routes
-
+import cn.x.dailycost.ui.viewmodel.GoodsEffect
+import cn.x.dailycost.ui.viewmodel.GoodsIntent
+import cn.x.dailycost.ui.viewmodel.GoodsVM
+import cn.x.dailycost.util.ToastUtil
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
 fun MyScreen(
+    goodsVM: GoodsVM = koinViewModel(),
 ) {
     val navigator = LocalNavigator.current
+
+    val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
+
+    val state = goodsVM.state.collectAsState()
+
+    LaunchedEffect(Unit) {
+        goodsVM.effect.collect { effect ->
+            when (effect) {
+                is GoodsEffect.ShowMessage -> {
+                    ToastUtil.show(effect.message)
+                }
+
+                is GoodsEffect.NavigateToHome ->{
+
+                }
+            }
+        }
+    }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // ========== 文件选择器 ==========
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+//                try {
+//                } catch (e: Exception) {
+//                }
+                // 1. 在UI层读取文件内容
+                val jsonString = context.contentResolver
+                    .openInputStream(it)
+                    ?.bufferedReader()
+                    .use { reader -> reader?.readText() }
+                jsonString?.let{
+                    val goods = json.decodeFromString<List<GoodsItemEntity>>(jsonString)
+                    goodsVM.processIntent(GoodsIntent.ImportData(goods))
+                }
+            }
+        }
+    }
+
+    val createFileLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val goodsString = json.encodeToString(state.value.goodsItems)
+                context.contentResolver.openOutputStream(it)?.use { stream ->
+                    stream.write(goodsString.toByteArray())
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -90,7 +161,9 @@ fun MyScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .clickable { },
+                        .clickable {
+                            createFileLauncher.launch("goods_backup_${System.currentTimeMillis()}.json")
+                        },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("导出json数据")
@@ -103,7 +176,9 @@ fun MyScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .clickable { },
+                        .clickable {
+                            filePickerLauncher.launch(arrayOf("application/json"))
+                        },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("导入json数据")

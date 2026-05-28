@@ -4,6 +4,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.BottomSheetDefaults.DragHandle
+import kotlinx.coroutines.launch
 
 /**
  * 一个可复用的、支持自定义内容的 ModalBottomSheet 组件
@@ -23,14 +24,17 @@ fun CustomizableBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true // 跳过半展开状态，直接完全展开
     )
-//    val scope = rememberCoroutineScope()
+    // 添加协程作用域用于动画控制
+    val coroutineScope = rememberCoroutineScope()
 
     // 监听 isVisible 状态变化，并相应地显示或隐藏面板
     LaunchedEffect(isVisible) {
-        if (isVisible) {
-            sheetState.show()
-        } else {
-            sheetState.hide()
+        coroutineScope.launch {
+            if (isVisible) {
+                sheetState.show()
+            } else {
+                sheetState.hide()
+            }
         }
     }
 

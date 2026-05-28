@@ -1,15 +1,13 @@
 package cn.x.dailycost.data.entity
 
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.room.ColumnInfo
+
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import cn.x.dailycost.R
+import kotlinx.serialization.Serializable
 
 
+@Serializable
 @Entity(tableName = "goods_item")
 data class GoodsItemEntity(
 
